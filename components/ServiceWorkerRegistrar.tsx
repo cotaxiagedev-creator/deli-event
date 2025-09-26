@@ -22,7 +22,6 @@ export default function ServiceWorkerRegistrar() {
           });
         });
       } catch (e) {
-        // eslint-disable-next-line no-console
         console.warn("SW registration failed", e);
       }
     };

@@ -45,10 +45,15 @@ export async function sendContactEmail(payload: ContactPayload): Promise<{ ok: b
 
     if (res.status === 200) return { ok: true };
     return { ok: false, error: `EmailJS status ${res.status}` };
-  } catch (e: any) {
+  } catch (e: unknown) {
     // 422 (Unprocessable Content) arrive généralement quand les noms de variables
     // ne correspondent pas à ceux attendus par le template EmailJS.
-    const msg = e?.text || e?.message || "Erreur d’envoi";
+    const msg =
+      typeof e === "object" && e !== null && "message" in e
+        ? String((e as { message?: unknown }).message)
+        : typeof e === "object" && e !== null && "text" in e
+        ? String((e as { text?: unknown }).text)
+        : "Erreur d’envoi";
     return { ok: false, error: msg };
   }
 }

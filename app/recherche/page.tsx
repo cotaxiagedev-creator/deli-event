@@ -12,6 +12,18 @@ const categories = [
   "Extérieur",
 ];
 
+type Listing = {
+  id: string;
+  title: string;
+  category: string;
+  pricePerDay: number;
+  location: { name: string; lat: number; lon: number };
+  image?: string;
+  tags?: string[];
+};
+
+type ListingWithDistance = Listing & { _distance: number };
+
 export default function SearchPage() {
   const searchParams = useSearchParams();
   const [query, setQuery] = useState("");
@@ -22,15 +34,7 @@ export default function SearchPage() {
   const [loadingSuggest, setLoadingSuggest] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState<{ name: string; lat: number; lon: number } | null>(null);
   const abortRef = useRef<AbortController | null>(null);
-  const [listings, setListings] = useState<Array<{
-    id: string;
-    title: string;
-    category: string;
-    pricePerDay: number;
-    location: { name: string; lat: number; lon: number };
-    image?: string;
-    tags?: string[];
-  }>>([]);
+  const [listings, setListings] = useState<Listing[]>([]);
   const [loadingListings, setLoadingListings] = useState(true);
   const [submittedMsg, setSubmittedMsg] = useState<string | null>(null);
 
@@ -71,11 +75,11 @@ export default function SearchPage() {
             },
           });
           if (!res.ok) throw new Error("Nominatim error");
-          const data = (await res.json()) as Array<any>;
+          const data = (await res.json()) as Array<{ display_name: string; lat: string; lon: string }>;
           setSuggestions(
             data.map((d) => ({ display_name: d.display_name, lat: d.lat, lon: d.lon }))
           );
-        } catch (e) {
+        } catch (_err) {
           // ignore abort errors
         } finally {
           setLoadingSuggest(false);
@@ -101,9 +105,9 @@ export default function SearchPage() {
       try {
         setLoadingListings(true);
         const res = await fetch("/listings.json", { cache: "no-store" });
-        const data = await res.json();
+        const data: Listing[] = await res.json();
         setListings(data);
-      } catch (e) {
+      } catch (_err) {
         // noop
       } finally {
         setLoadingListings(false);
@@ -119,7 +123,7 @@ export default function SearchPage() {
   }, [searchParams]);
 
   // Calcul distance Haversine en km
-  const distKm = (a: { lat: number; lon: number }, b: { lat: number; lon: number }) => {
+  const distKm = (a: { lat: number; lon: number }, b: { lat: number; lon: number }): number => {
     const R = 6371;
     const dLat = ((b.lat - a.lat) * Math.PI) / 180;
     const dLon = ((b.lon - a.lon) * Math.PI) / 180;
@@ -132,20 +136,20 @@ export default function SearchPage() {
     return R * c2;
   };
 
-  const filtered = useMemo(() => {
-    let arr = listings;
+  const filtered: Array<Listing | ListingWithDistance> = useMemo(() => {
+    let arr: Array<Listing | ListingWithDistance> = listings;
     if (cat) arr = arr.filter((l) => l.category === cat);
     if (selectedPlace) {
-      arr = arr
-        .map((l) => ({
-          ...l,
-          _distance: distKm(
-            { lat: selectedPlace.lat, lon: selectedPlace.lon },
-            { lat: l.location.lat, lon: l.location.lon }
-          ),
-        }))
-        .filter((l) => (l as any)._distance <= radius)
-        .sort((a: any, b: any) => a._distance - b._distance);
+      const withDist: ListingWithDistance[] = arr.map((l) => ({
+        ...(l as Listing),
+        _distance: distKm(
+          { lat: selectedPlace.lat, lon: selectedPlace.lon },
+          { lat: (l as Listing).location.lat, lon: (l as Listing).location.lon }
+        ),
+      }));
+      return withDist
+        .filter((l) => l._distance <= radius)
+        .sort((a, b) => a._distance - b._distance);
     }
     return arr;
   }, [listings, cat, selectedPlace, radius]);
@@ -259,7 +263,7 @@ export default function SearchPage() {
               ))}
             </>
           )}
-          {!loadingListings && filtered.map((l: any) => (
+          {!loadingListings && filtered.map((l) => (
             <div key={l.id} className="rounded-xl border border-black/5 bg-white p-5 hover:shadow-card transition">
               <div className="aspect-video overflow-hidden rounded-lg bg-gradient-to-br from-teal-50 to-violet-50">
                 {l.image && (
@@ -270,8 +274,8 @@ export default function SearchPage() {
               <h3 className="mt-3 font-medium text-gray-900">{l.title}</h3>
               <p className="text-sm text-gray-600">
                 À partir de {l.pricePerDay}€/jour
-                {selectedPlace && typeof l._distance === "number" && (
-                  <> • {l._distance.toFixed(1)} km</>
+                {selectedPlace && (l as ListingWithDistance)._distance !== undefined && (
+                  <> • {(l as ListingWithDistance)._distance.toFixed(1)} km</>
                 )}
               </p>
               <p className="mt-1 text-xs text-gray-500">{l.location?.name}</p>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
@@ -23,6 +23,53 @@ export default function CreateListingPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [suggestions, setSuggestions] = useState<Array<{ display_name: string; lat: string; lon: string }>>([]);
+  const [loadingSuggest, setLoadingSuggest] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
+  const [locLat, setLocLat] = useState<number | null>(null);
+  const [locLon, setLocLon] = useState<number | null>(null);
+
+  // Debounce helper specialized for our query string use-case
+  const debounce = (fn: (q: string) => unknown, delay = 300) => {
+    let t: ReturnType<typeof setTimeout>;
+    return (q: string) => {
+      clearTimeout(t);
+      t = setTimeout(() => fn(q), delay);
+    };
+  };
+
+  const fetchSuggestions = useMemo(
+    () =>
+      debounce(async (q: string) => {
+        if (!q || q.length < 2) {
+          setSuggestions([]);
+          return;
+        }
+        try {
+          setLoadingSuggest(true);
+          abortRef.current?.abort();
+          const controller = new AbortController();
+          abortRef.current = controller;
+          const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&addressdetails=1&limit=5`;
+          const res = await fetch(url, { signal: controller.signal, headers: { Accept: "application/json" } });
+          if (!res.ok) throw new Error("Nominatim error");
+          const data = (await res.json()) as Array<{ display_name: string; lat: string; lon: string }>;
+          setSuggestions(data);
+        } catch {
+          // ignore
+        } finally {
+          setLoadingSuggest(false);
+        }
+      }, 350),
+    []
+  );
+
+  const onSelectSuggestion = (s: { display_name: string; lat: string; lon: string }) => {
+    setLocation(s.display_name);
+    setSuggestions([]);
+    setLocLat(parseFloat(s.lat));
+    setLocLon(parseFloat(s.lon));
+  };
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,11 +93,31 @@ export default function CreateListingPage() {
 
     try {
       setLoading(true);
+      // Prefer coordinates from a picked suggestion; fallback to geocoding the free text
+      let lat: number | null = locLat;
+      let lon: number | null = locLon;
+      if ((lat === null || lon === null) && location && location.length >= 2) {
+        try {
+          const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}&limit=1`;
+          const res = await fetch(url, { headers: { Accept: "application/json" } });
+          if (res.ok) {
+            const data = (await res.json()) as Array<{ lat: string; lon: string }>;
+            if (data[0]) {
+              lat = parseFloat(data[0].lat);
+              lon = parseFloat(data[0].lon);
+            }
+          }
+        } catch {
+          // ignore geocoding errors
+        }
+      }
       const { error: insertError } = await supabase.from("listings").insert({
         title,
         category: cat,
         price_per_day: priceNum,
         location_name: location,
+        location_lat: lat,
+        location_lon: lon,
         image_url: imageUrl || null,
         tags: desc ? ["description"] : [],
       });
@@ -63,6 +130,8 @@ export default function CreateListingPage() {
       setDesc("");
       setLocation("");
       setImageUrl("");
+      setLocLat(null);
+      setLocLon(null);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erreur lors de la publication";
       setError(msg);
@@ -123,13 +192,44 @@ export default function CreateListingPage() {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Localisation *</label>
-          <input
-            type="text"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            placeholder="Ville, code postal"
-            className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-          />
+          <div className="relative">
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => {
+                setLocation(e.target.value);
+                setLocLat(null);
+                setLocLon(null);
+                fetchSuggestions(e.target.value);
+              }}
+              placeholder="Ville, code postal"
+              className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              aria-autocomplete="list"
+              aria-expanded={suggestions.length > 0}
+              aria-controls="loc-suggest"
+            />
+            {loadingSuggest && (
+              <div className="absolute right-3 top-3 h-4 w-4 animate-spin rounded-full border-2 border-teal-500 border-t-transparent" />
+            )}
+            {suggestions.length > 0 && (
+              <ul
+                id="loc-suggest"
+                className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md border border-black/10 bg-white shadow"
+                role="listbox"
+              >
+                {suggestions.map((s) => (
+                  <li
+                    key={`${s.display_name}-${s.lat}-${s.lon}`}
+                    role="option"
+                    className="cursor-pointer px-3 py-2 hover:bg-teal-50"
+                    onClick={() => onSelectSuggestion(s)}
+                  >
+                    {s.display_name}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Image (URL)</label>

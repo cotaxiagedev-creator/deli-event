@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
 const categories = [
   "Mobilier",
@@ -104,9 +105,36 @@ function SearchPage() {
     const load = async () => {
       try {
         setLoadingListings(true);
-        const res = await fetch("/listings.json", { cache: "no-store" });
-        const data: Listing[] = await res.json();
-        setListings(data);
+        let loaded = false;
+        if (isSupabaseConfigured) {
+          const { data, error } = await supabase
+            .from("listings")
+            .select("id, title, category, price_per_day, location_name, location_lat, location_lon, image_url, tags")
+            .order("created_at", { ascending: false })
+            .limit(50);
+          if (!error && data && data.length > 0) {
+            const mapped: Listing[] = data.map((row: any) => ({
+              id: row.id,
+              title: row.title,
+              category: row.category,
+              pricePerDay: Number(row.price_per_day) || 0,
+              location: {
+                name: row.location_name || "",
+                lat: typeof row.location_lat === "number" ? row.location_lat : 0,
+                lon: typeof row.location_lon === "number" ? row.location_lon : 0,
+              },
+              image: row.image_url || undefined,
+              tags: Array.isArray(row.tags) ? row.tags : undefined,
+            }));
+            setListings(mapped);
+            loaded = true;
+          }
+        }
+        if (!loaded) {
+          const res = await fetch("/listings.json", { cache: "no-store" });
+          const data: Listing[] = await res.json();
+          setListings(data);
+        }
       } catch {
         // noop
       } finally {
@@ -137,19 +165,30 @@ function SearchPage() {
   };
 
   const filtered: Array<Listing | ListingWithDistance> = useMemo(() => {
-    let arr: Array<Listing | ListingWithDistance> = listings;
+    let arr: Listing[] = listings;
     if (cat) arr = arr.filter((l) => l.category === cat);
     if (selectedPlace) {
-      const withDist: ListingWithDistance[] = arr.map((l) => ({
-        ...(l as Listing),
+      const withCoords = arr.filter((l) =>
+        Number.isFinite(l.location?.lat) &&
+        Number.isFinite(l.location?.lon) &&
+        (l.location.lat !== 0 || l.location.lon !== 0)
+      );
+      const withoutCoords = arr.filter((l) => !withCoords.includes(l));
+
+      const withDist: ListingWithDistance[] = withCoords.map((l) => ({
+        ...l,
         _distance: distKm(
           { lat: selectedPlace.lat, lon: selectedPlace.lon },
-          { lat: (l as Listing).location.lat, lon: (l as Listing).location.lon }
+          { lat: l.location.lat, lon: l.location.lon }
         ),
       }));
-      return withDist
+
+      const inRadius = withDist
         .filter((l) => l._distance <= radius)
         .sort((a, b) => a._distance - b._distance);
+
+      // Concat: d'abord résultats triés avec distance, puis ceux sans coordonnées
+      return [...inRadius, ...withoutCoords];
     }
     return arr;
   }, [listings, cat, selectedPlace, radius]);
@@ -266,9 +305,20 @@ function SearchPage() {
           {!loadingListings && filtered.map((l) => (
             <div key={l.id} className="rounded-xl border border-black/5 bg-white p-5 hover:shadow-card transition">
               <div className="aspect-video overflow-hidden rounded-lg bg-gradient-to-br from-teal-50 to-violet-50">
-                {l.image && (
+                {l.image ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={l.image} alt={l.title} className="h-full w-full object-cover" />
+                  <img
+                    src={l.image}
+                    alt={l.title}
+                    className="h-full w-full object-cover"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).onerror = null;
+                      (e.currentTarget as HTMLImageElement).src = "/logo.png";
+                    }}
+                  />
+                ) : (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src="/logo.png" alt={l.title} className="h-full w-full object-contain p-6" />
                 )}
               </div>
               <h3 className="mt-3 font-medium text-gray-900">{l.title}</h3>

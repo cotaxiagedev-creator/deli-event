@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
 const categories = [
   "Mobilier",
@@ -21,8 +22,9 @@ export default function CreateListingPage() {
   const [imageUrl, setImageUrl] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
     setError(null);
@@ -37,8 +39,36 @@ export default function CreateListingPage() {
       return;
     }
 
-    // MVP: pas d’enregistrement, simple confirmation
-    setMessage("Votre annonce a été enregistrée localement (démo). Nous ajouterons l’envoi et la persistance en V1.1.");
+    if (!isSupabaseConfigured) {
+      setError("Supabase n'est pas configuré (variables manquantes).");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const { error: insertError } = await supabase.from("listings").insert({
+        title,
+        category: cat,
+        price_per_day: priceNum,
+        location_name: location,
+        image_url: imageUrl || null,
+        tags: desc ? ["description"] : [],
+      });
+      if (insertError) throw insertError;
+
+      setMessage("Annonce publiée avec succès.");
+      setTitle("");
+      setCat("");
+      setPrice("");
+      setDesc("");
+      setLocation("");
+      setImageUrl("");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erreur lors de la publication";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -123,8 +153,8 @@ export default function CreateListingPage() {
         </div>
 
         <div className="flex gap-3 pt-2">
-          <button type="submit" className="inline-flex items-center justify-center rounded-md bg-teal-600 px-5 py-3 text-white shadow hover:bg-teal-700 transition">
-            Publier (démo)
+          <button type="submit" disabled={loading} className="inline-flex items-center justify-center rounded-md bg-teal-600 px-5 py-3 text-white shadow hover:bg-teal-700 transition disabled:opacity-60">
+            {loading ? "Publication…" : "Publier"}
           </button>
           <Link href="/" className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-5 py-3 text-gray-700 hover:bg-gray-50 transition">
             Annuler

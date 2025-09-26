@@ -113,17 +113,29 @@ function SearchPage() {
             .order("created_at", { ascending: false })
             .limit(50);
           if (!error && data && data.length > 0) {
-            const mapped: Listing[] = data.map((row: any) => ({
+            type ListingRow = {
+              id: string;
+              title: string;
+              category: string;
+              price_per_day: number | string;
+              location_name: string | null;
+              location_lat: number | null;
+              location_lon: number | null;
+              image_url: string | null;
+              tags: string[] | null;
+            };
+            const rows = (data as unknown as ListingRow[]) || [];
+            const mapped: Listing[] = rows.map((row) => ({
               id: row.id,
               title: row.title,
               category: row.category,
               pricePerDay: Number(row.price_per_day) || 0,
               location: {
-                name: row.location_name || "",
+                name: row.location_name ?? "",
                 lat: typeof row.location_lat === "number" ? row.location_lat : 0,
                 lon: typeof row.location_lon === "number" ? row.location_lon : 0,
               },
-              image: row.image_url || undefined,
+              image: row.image_url ?? undefined,
               tags: Array.isArray(row.tags) ? row.tags : undefined,
             }));
             setListings(mapped);

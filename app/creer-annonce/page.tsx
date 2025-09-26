@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 const categories = [
   "Mobilier",
@@ -125,9 +126,9 @@ export default function CreateListingPage() {
           <button type="submit" className="inline-flex items-center justify-center rounded-md bg-teal-600 px-5 py-3 text-white shadow hover:bg-teal-700 transition">
             Publier (démo)
           </button>
-          <a href="/" className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-5 py-3 text-gray-700 hover:bg-gray-50 transition">
+          <Link href="/" className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-5 py-3 text-gray-700 hover:bg-gray-50 transition">
             Annuler
-          </a>
+          </Link>
         </div>
       </form>
     </div>

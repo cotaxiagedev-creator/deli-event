@@ -45,12 +45,12 @@ export default function SearchPage() {
     );
   };
 
-  // Debounce helper
-  const debounce = (fn: (...args: any[]) => void, delay = 300) => {
+  // Debounce helper specialized for our query string use-case
+  const debounce = (fn: (q: string) => unknown, delay = 300) => {
     let t: ReturnType<typeof setTimeout>;
-    return (...args: any[]) => {
+    return (q: string) => {
       clearTimeout(t);
-      t = setTimeout(() => fn(...args), delay);
+      t = setTimeout(() => fn(q), delay);
     };
   };
 
@@ -79,7 +79,7 @@ export default function SearchPage() {
           setSuggestions(
             data.map((d) => ({ display_name: d.display_name, lat: d.lat, lon: d.lon }))
           );
-        } catch (_err) {
+        } catch {
           // ignore abort errors
         } finally {
           setLoadingSuggest(false);
@@ -107,7 +107,7 @@ export default function SearchPage() {
         const res = await fetch("/listings.json", { cache: "no-store" });
         const data: Listing[] = await res.json();
         setListings(data);
-      } catch (_err) {
+      } catch {
         // noop
       } finally {
         setLoadingListings(false);

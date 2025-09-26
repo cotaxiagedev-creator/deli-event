@@ -20,6 +20,8 @@ export default function CreateListingPage() {
   const [desc, setDesc] = useState("");
   const [location, setLocation] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -111,6 +113,26 @@ export default function CreateListingPage() {
           // ignore geocoding errors
         }
       }
+      // Decide final image URL: upload file if provided, else use the typed URL
+      let finalImageUrl: string | null = imageUrl || null;
+      if (imageFile && isSupabaseConfigured) {
+        try {
+          const safeName = imageFile.name.replace(/[^a-zA-Z0-9._-]+/g, "-");
+          const path = `listings/${Date.now()}-${safeName}`;
+          const { error: upErr } = await supabase.storage.from("listings").upload(path, imageFile, {
+            cacheControl: "3600",
+            upsert: false,
+            contentType: imageFile.type || "image/*",
+          });
+          if (upErr) throw upErr;
+          const { data: pub } = supabase.storage.from("listings").getPublicUrl(path);
+          if (pub?.publicUrl) finalImageUrl = pub.publicUrl;
+        } catch (e) {
+          // If upload fails, keep fallback to typed URL (or null)
+          console.warn("Image upload failed, falling back to typed URL", e);
+        }
+      }
+
       const { error: insertError } = await supabase.from("listings").insert({
         title,
         category: cat,
@@ -118,7 +140,7 @@ export default function CreateListingPage() {
         location_name: location,
         location_lat: lat,
         location_lon: lon,
-        image_url: imageUrl || null,
+        image_url: finalImageUrl,
         tags: desc ? ["description"] : [],
       });
       if (insertError) throw insertError;
@@ -130,6 +152,8 @@ export default function CreateListingPage() {
       setDesc("");
       setLocation("");
       setImageUrl("");
+      setImageFile(null);
+      setImagePreview(null);
       setLocLat(null);
       setLocLon(null);
     } catch (err) {
@@ -226,15 +250,41 @@ export default function CreateListingPage() {
             )}
           </div>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Image (URL)</label>
-          <input
-            type="url"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            placeholder="https://…"
-            className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-          />
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Image (fichier)</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const f = e.target.files?.[0] || null;
+                setImageFile(f);
+                if (f) {
+                  const url = URL.createObjectURL(f);
+                  setImagePreview(url);
+                } else {
+                  setImagePreview(null);
+                }
+              }}
+              className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            />
+            {imagePreview && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={imagePreview} alt="Prévisualisation" className="mt-2 h-32 w-full object-cover rounded-md" />
+            )}
+            <p className="mt-1 text-xs text-gray-500">Le fichier sera envoyé dans le bucket Supabase public `listings`.</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Image (URL alternative)</label>
+            <input
+              type="url"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              placeholder="https://…"
+              className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+            />
+            <p className="mt-1 text-xs text-gray-500">Si aucun fichier n’est sélectionné, on utilisera cette URL.</p>
+          </div>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Description</label>

@@ -247,16 +247,44 @@ function SearchPage() {
             </ul>
           )}
           {selectedPlace && (
-            <p className="mt-1 text-xs text-gray-500">Sélectionné: {selectedPlace.name}</p>
-          )}
-        </div>
-        <div className="sm:col-span-1">
+            <p className="mt-1 text-xs text-gray-500">{l.location?.name}</p>
+          </div>
+        ))}
+
+        {!loadingListings && filtered.length === 0 && (
+          <div className="rounded-xl border border-dashed border-black/10 bg-white p-8 text-center">
+            <p className="text-gray-700 font-medium">Aucune annonce trouvée</p>
+            <p className="text-sm text-gray-500 mt-1">Essayez d’élargir le rayon, de changer de lieu, ou de réinitialiser les filtres.</p>
+            <button
+              onClick={() => {
+                try {
+                  // Clear filters if setters exist in scope
+                  // @ts-expect-error local state setters exist in this component
+                  setCat("");
+                  // @ts-expect-error local state setters exist in this component
+                  setSelectedPlace(null);
+                  // @ts-expect-error local state setters exist in this component
+                  setQuery("");
+                  // @ts-expect-error local state setters exist in this component
+                  setSuggestions([]);
+                } catch {}
+              }}
+              className="mt-4 inline-flex items-center justify-center rounded-md bg-teal-600 px-4 py-2 text-white shadow hover:bg-teal-700 transition"
+            >
+              Réinitialiser les filtres
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+className="sm:col-span-1">
           <label className="block text-sm font-medium text-gray-700">Date</label>
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
           />
         </div>
         <div className="sm:col-span-1">
@@ -314,7 +342,7 @@ function SearchPage() {
               ))}
             </>
           )}
-          {!loadingListings && filtered.map((l) => (
+          {!loadingListings && filtered.length > 0 && filtered.map((l) => (
             <div key={l.id} className="rounded-xl border border-black/5 bg-white p-5 hover:shadow-card transition">
               <div className="aspect-video overflow-hidden rounded-lg bg-gradient-to-br from-teal-50 to-violet-50">
                 {l.image ? (

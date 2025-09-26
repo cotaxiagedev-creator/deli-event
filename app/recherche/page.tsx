@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 const categories = [
@@ -24,7 +24,7 @@ type Listing = {
 
 type ListingWithDistance = Listing & { _distance: number };
 
-export default function SearchPage() {
+function SearchPage() {
   const searchParams = useSearchParams();
   const [query, setQuery] = useState("");
   const [date, setDate] = useState("");
@@ -298,5 +298,13 @@ export default function SearchPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">Chargement…</div>}>
+      <SearchPage />
+    </Suspense>
   );
 }

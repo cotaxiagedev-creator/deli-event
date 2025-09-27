@@ -22,6 +22,13 @@ export default function ListingDetailPage() {
   const id = params?.id as string | undefined;
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
+  // Contact form state
+  const [cName, setCName] = useState("");
+  const [cEmail, setCEmail] = useState("");
+  const [cMsg, setCMsg] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [okMsg, setOkMsg] = useState<string | null>(null);
+  const [errMsg, setErrMsg] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -122,6 +129,96 @@ export default function ListingDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Contact form */}
+      <section aria-labelledby="contact-title" className="mt-10">
+        <h2 id="contact-title" className="text-xl font-semibold text-gray-900">Contacter le propriétaire</h2>
+        <p className="mt-1 text-gray-600">Envoyez un message au propriétaire propos de cette annonce.</p>
+
+        {errMsg && (
+          <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert" aria-live="assertive" aria-atomic="true">
+            {errMsg}
+          </div>
+        )}
+        {okMsg && (
+          <div className="mt-4 rounded-md border border-teal-200 bg-teal-50 p-3 text-sm text-teal-800" role="status" aria-live="polite" aria-atomic="true">
+            {okMsg}
+          </div>
+        )}
+
+        <form
+          className="mt-4 grid gap-4 sm:grid-cols-2"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            setErrMsg(null);
+            setOkMsg(null);
+            if (!cName || !cEmail || !cMsg) {
+              setErrMsg("Veuillez renseigner nom, e‑mail et message.");
+              return;
+            }
+            try {
+              setBusy(true);
+              const res = await fetch("/api/contact", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ listingId: listing.id, name: cName, email: cEmail, message: cMsg }),
+              });
+              const data = await res.json();
+              if (!res.ok || data?.ok !== true) {
+                throw new Error(data?.error || "Envoi impossible");
+              }
+              setOkMsg("Message envoyé. Nous vous répondrons dès que possible.");
+              setCMsg("");
+            } catch (err) {
+              setErrMsg(err instanceof Error ? err.message : "Erreur inconnue");
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          <div className="sm:col-span-1">
+            <label className="block text-sm font-medium text-gray-700">Nom</label>
+            <input
+              type="text"
+              value={cName}
+              onChange={(e) => setCName(e.target.value)}
+              autoComplete="name"
+              className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
+              placeholder="Votre nom"
+            />
+          </div>
+          <div className="sm:col-span-1">
+            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <input
+              type="email"
+              value={cEmail}
+              onChange={(e) => setCEmail(e.target.value)}
+              autoComplete="email"
+              className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
+              placeholder="vous@exemple.com"
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="block text-sm font-medium text-gray-700">Message</label>
+            <textarea
+              rows={5}
+              value={cMsg}
+              onChange={(e) => setCMsg(e.target.value)}
+              className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
+              placeholder="Bonjour, je suis intéressé par votre annonce..."
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <button
+              type="submit"
+              disabled={busy}
+              className="inline-flex items-center justify-center rounded-md bg-teal-600 px-5 py-3 text-white shadow hover:bg-teal-700 transition disabled:opacity-60"
+            >
+              {busy ? "Envoi…" : "Envoyer le message"}
+            </button>
+          </div>
+        </form>
+      </section>
     </div>
   );
 }

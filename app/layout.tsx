@@ -8,6 +8,7 @@ export const viewport = {
 };
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
 import InstallPrompt from "@/components/InstallPrompt";
+import ToastProvider from "@/components/ToastProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -72,15 +73,17 @@ export default function RootLayout({
         <link rel="preconnect" href="https://nominatim.openstreetmap.org" crossOrigin="anonymous" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-gray-900`}>
-        <div className="min-h-dvh flex flex-col">
-          <Navbar />
-          <main className="flex-1">
-            {children}
-          </main>
-          <Footer />
-          <InstallPrompt />
-          <ServiceWorkerRegistrar />
-        </div>
+        <ToastProvider>
+          <div className="min-h-dvh flex flex-col">
+            <Navbar />
+            <main className="flex-1">
+              {children}
+            </main>
+            <Footer />
+            <InstallPrompt />
+            <ServiceWorkerRegistrar />
+          </div>
+        </ToastProvider>
       </body>
     </html>
   );

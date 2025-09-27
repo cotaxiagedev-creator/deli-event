@@ -34,7 +34,8 @@ export default function LoginPage() {
           }
           try {
             setBusy(true);
-            const { error } = await supabase.auth.signInWithOtp({ email });
+            const redirectTo = typeof window !== "undefined" ? `${window.location.origin}/compte/annonces` : undefined;
+            const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo } });
             if (error) throw error;
             show("success", "Lien magique envoyé. Vérifiez votre boîte mail.");
           } catch (err) {

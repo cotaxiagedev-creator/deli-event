@@ -9,6 +9,8 @@ export const viewport = {
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
 import InstallPrompt from "@/components/InstallPrompt";
 import ToastProvider from "@/components/ToastProvider";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -83,6 +85,8 @@ export default function RootLayout({
             <InstallPrompt />
             <ServiceWorkerRegistrar />
           </div>
+          <Analytics />
+          <SpeedInsights />
         </ToastProvider>
       </body>
     </html>

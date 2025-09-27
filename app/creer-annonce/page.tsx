@@ -191,6 +191,22 @@ export default function CreateListingPage() {
           {message}
         </div>
       )}
+      {message && lastId && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Link
+            href={`/annonce/${lastId}`}
+            className="inline-flex items-center justify-center rounded-md bg-teal-600 px-4 py-2 text-white shadow hover:bg-teal-700 transition"
+          >
+            Voir l’annonce
+          </Link>
+          <Link
+            href="/recherche"
+            className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-4 py-2 text-gray-700 hover:bg-gray-50 transition"
+          >
+            Aller à la recherche
+          </Link>
+        </div>
+      )}
 
       <form onSubmit={onSubmit} className="mt-6 grid gap-4">
         <div>

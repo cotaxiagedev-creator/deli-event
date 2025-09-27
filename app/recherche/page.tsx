@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
@@ -371,6 +372,12 @@ function SearchPage() {
                 ))}
               </div>
               <div className="mt-4 flex gap-2">
+                <Link
+                  href={`/annonce/${l.id}`}
+                  className="inline-flex items-center justify-center rounded-md bg-teal-600 px-3 py-2 text-white shadow hover:bg-teal-700 transition text-sm"
+                >
+                  Voir
+                </Link>
                 <a
                   href={`/contact?subject=${encodeURIComponent("Demande d’information • " + l.title)}&name=&email=`}
                   className="inline-flex items-center justify-center rounded-md border border-teal-200 bg-white px-3 py-2 text-teal-700 hover:bg-teal-50 transition text-sm"

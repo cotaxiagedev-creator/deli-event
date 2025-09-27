@@ -140,6 +140,9 @@ export default function CreateListingPage() {
         }
       }
 
+      const { data: userData } = await supabase.auth.getUser();
+      const ownerId = userData?.user?.id ?? null;
+
       const { data: inserted, error: insertError } = await supabase.from("listings").insert({
         title,
         category: cat,
@@ -149,6 +152,7 @@ export default function CreateListingPage() {
         location_lon: lon,
         image_url: finalImageUrl,
         tags: desc ? ["description"] : [],
+        owner_id: ownerId,
       }).select('id').single();
       if (insertError) throw insertError;
 

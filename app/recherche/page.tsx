@@ -67,12 +67,14 @@ function SearchPage() {
           abortRef.current?.abort();
           const controller = new AbortController();
           abortRef.current = controller;
-          const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&addressdetails=1&limit=5`;
+          const polite = "contact@deliv-event.fr"; // per Nominatim usage policy (optional)
+          const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&addressdetails=1&limit=5&email=${encodeURIComponent(polite)}`;
           const res = await fetch(url, {
             signal: controller.signal,
             headers: {
               // Nominatim etiquette: include a descriptive header
               "Accept": "application/json",
+              "Accept-Language": typeof navigator !== "undefined" ? navigator.language : "fr-FR",
             },
           });
           if (!res.ok) throw new Error("Nominatim error");
@@ -222,13 +224,29 @@ function SearchPage() {
       <form onSubmit={onSubmit} className="mt-8 grid gap-4 sm:grid-cols-6 items-start">
         <div className="sm:col-span-3">
           <label className="block text-sm font-medium text-gray-700">Lieu</label>
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Ville ou adresse"
-            className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-          />
+          <div className="relative">
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Ville ou adresse"
+              className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 pr-10 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+            />
+            {query && (
+              <button
+                type="button"
+                aria-label="Effacer le lieu"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-gray-500 hover:text-gray-700"
+                onClick={() => {
+                  setQuery("");
+                  setSuggestions([]);
+                  setSelectedPlace(null);
+                }}
+              >
+                ✕
+              </button>
+            )}
+          </div>
           {/* Suggestions dropdown */}
           {suggestions.length > 0 && (
             <ul className="mt-1 max-h-56 overflow-auto rounded-md border border-black/10 bg-white shadow">

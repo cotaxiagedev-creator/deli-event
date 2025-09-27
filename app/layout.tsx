@@ -32,6 +32,11 @@ export const metadata: Metadata = {
     shortcut: "/logo.png",
     apple: "/logo.png",
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Deliv’ Event",
+  },
 };
 
 export default function RootLayout({

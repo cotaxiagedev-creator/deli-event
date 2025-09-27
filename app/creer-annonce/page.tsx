@@ -170,10 +170,24 @@ export default function CreateListingPage() {
       <p className="mt-2 text-gray-600">Version 1 (MVP): informations essentielles, sans paiement et sans authentification.</p>
 
       {error && (
-        <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>
+        <div
+          className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
+        >
+          {error}
+        </div>
       )}
       {message && (
-        <div className="mt-4 rounded-md border border-teal-200 bg-teal-50 p-3 text-sm text-teal-800">{message}</div>
+        <div
+          className="mt-4 rounded-md border border-teal-200 bg-teal-50 p-3 text-sm text-teal-800"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {message}
+        </div>
       )}
 
       <form onSubmit={onSubmit} className="mt-6 grid gap-4">
@@ -185,6 +199,8 @@ export default function CreateListingPage() {
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Ex: Photobooth rétro"
             className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
+            autoComplete="off"
+            name="title"
           />
         </div>
         <div className="grid sm:grid-cols-2 gap-4">
@@ -194,6 +210,7 @@ export default function CreateListingPage() {
               value={cat}
               onChange={(e) => setCat(e.target.value)}
               className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900"
+              name="category"
             >
               <option value="">Sélectionner</option>
               {categories.map((c) => (
@@ -211,6 +228,9 @@ export default function CreateListingPage() {
               onChange={(e) => setPrice(e.target.value)}
               placeholder="Ex: 50"
               className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
+              inputMode="numeric"
+              autoComplete="off"
+              name="price"
             />
           </div>
         </div>
@@ -227,8 +247,27 @@ export default function CreateListingPage() {
                 fetchSuggestions(e.target.value);
               }}
               placeholder="Ville, code postal"
-              className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
+              className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 pr-10 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
+              autoComplete="address-level2"
+              aria-controls="loc-suggest"
+              aria-expanded={suggestions.length > 0}
+              role="combobox"
             />
+            {location && (
+              <button
+                type="button"
+                aria-label="Effacer la localisation"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-gray-500 hover:text-gray-700"
+                onClick={() => {
+                  setLocation("");
+                  setSuggestions([]);
+                  setLocLat(null);
+                  setLocLon(null);
+                }}
+              >
+                ✕
+              </button>
+            )}
             {loadingSuggest && (
               <div className="absolute right-3 top-3 h-4 w-4 animate-spin rounded-full border-2 border-teal-500 border-t-transparent" />
             )}
@@ -236,11 +275,13 @@ export default function CreateListingPage() {
               <ul
                 id="loc-suggest"
                 className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md border border-black/10 bg-white shadow"
+                role="listbox"
               >
                 {suggestions.map((s) => (
                   <li
                     key={`${s.display_name}-${s.lat}-${s.lon}`}
                     className="cursor-pointer px-3 py-2 hover:bg-teal-50"
+                    role="option"
                     onClick={() => onSelectSuggestion(s)}
                   >
                     {s.display_name}

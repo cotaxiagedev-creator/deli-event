@@ -111,6 +111,9 @@ export default function MyListingsPage() {
                     <Link href={`/annonce/${l.id}`} className="inline-flex items-center justify-center rounded-md bg-teal-600 px-3 py-2 text-white shadow hover:bg-teal-700 transition text-sm">
                       Voir
                     </Link>
+                    <Link href={`/compte/annonces/${l.id}/edit`} className="inline-flex items-center justify-center rounded-md border border-teal-200 bg-white px-3 py-2 text-teal-700 hover:bg-teal-50 transition text-sm">
+                      Éditer
+                    </Link>
                     <button onClick={() => onDelete(l.id)} className="inline-flex items-center justify-center rounded-md border border-red-200 bg-white px-3 py-2 text-red-700 hover:bg-red-50 transition text-sm">
                       Supprimer
                     </button>

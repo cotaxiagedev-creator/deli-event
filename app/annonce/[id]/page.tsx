@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { useToast } from "@/components/ToastProvider";
 
 type Listing = {
   id: string;
@@ -20,6 +21,7 @@ type Listing = {
 export default function ListingDetailPage() {
   const params = useParams<{ id: string }>();
   const id = params?.id as string | undefined;
+  const { show } = useToast();
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
   // Contact form state
@@ -27,8 +29,7 @@ export default function ListingDetailPage() {
   const [cEmail, setCEmail] = useState("");
   const [cMsg, setCMsg] = useState("");
   const [busy, setBusy] = useState(false);
-  const [okMsg, setOkMsg] = useState<string | null>(null);
-  const [errMsg, setErrMsg] = useState<string | null>(null);
+  // Inline messages replaced by toasts
 
   useEffect(() => {
     const load = async () => {
@@ -135,25 +136,12 @@ export default function ListingDetailPage() {
         <h2 id="contact-title" className="text-xl font-semibold text-gray-900">Contacter le propriétaire</h2>
         <p className="mt-1 text-gray-600">Envoyez un message au propriétaire propos de cette annonce.</p>
 
-        {errMsg && (
-          <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert" aria-live="assertive" aria-atomic="true">
-            {errMsg}
-          </div>
-        )}
-        {okMsg && (
-          <div className="mt-4 rounded-md border border-teal-200 bg-teal-50 p-3 text-sm text-teal-800" role="status" aria-live="polite" aria-atomic="true">
-            {okMsg}
-          </div>
-        )}
-
         <form
           className="mt-4 grid gap-4 sm:grid-cols-2"
           onSubmit={async (e) => {
             e.preventDefault();
-            setErrMsg(null);
-            setOkMsg(null);
             if (!cName || !cEmail || !cMsg) {
-              setErrMsg("Veuillez renseigner nom, e‑mail et message.");
+              show("error", "Veuillez renseigner nom, e‑mail et message.");
               return;
             }
             try {
@@ -167,10 +155,10 @@ export default function ListingDetailPage() {
               if (!res.ok || data?.ok !== true) {
                 throw new Error(data?.error || "Envoi impossible");
               }
-              setOkMsg("Message envoyé. Nous vous répondrons dès que possible.");
+              show("success", "Message envoyé au propriétaire");
               setCMsg("");
             } catch (err) {
-              setErrMsg(err instanceof Error ? err.message : "Erreur inconnue");
+              show("error", err instanceof Error ? err.message : "Erreur inconnue");
             } finally {
               setBusy(false);
             }

@@ -231,7 +231,7 @@ function SearchPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Ville ou adresse"
-              className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 pr-10 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 pr-10 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
             />
             {query && (
               <button
@@ -275,7 +275,7 @@ function SearchPage() {
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+            className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
           />
         </div>
         <div className="sm:col-span-1">
@@ -283,7 +283,7 @@ function SearchPage() {
           <select
             value={cat}
             onChange={(e) => setCat(e.target.value)}
-            className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+            className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900"
           >
             <option value="">Toutes</option>
             {categories.map((c) => (
@@ -301,7 +301,7 @@ function SearchPage() {
             max={100}
             value={radius}
             onChange={(e) => setRadius(parseInt(e.target.value || "10", 10))}
-            className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+            className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
           />
         </div>
         <div className="sm:col-span-6">

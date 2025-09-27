@@ -38,6 +38,26 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "Deliv’ Event",
   },
+  openGraph: {
+    title: "Deliv’ Event | Location de matériel événementiel",
+    description:
+      "Louez et proposez du matériel événementiel: mobilier, photobooth, sonorisation, et plus. Simple, rapide et local.",
+    url: "https://deliv-event.fr",
+    siteName: "Deliv’ Event",
+    images: [
+      { url: "/logo.png", width: 1200, height: 630, alt: "Deliv’ Event" },
+    ],
+    locale: "fr_FR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Deliv’ Event | Location de matériel événementiel",
+    description:
+      "Louez et proposez du matériel événementiel: mobilier, photobooth, sonorisation, et plus.",
+    images: ["/logo.png"],
+    creator: "@delivevent",
+  },
 };
 
 export default function RootLayout({
@@ -47,6 +67,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
+      <head>
+        <link rel="dns-prefetch" href="https://nominatim.openstreetmap.org" />
+        <link rel="preconnect" href="https://nominatim.openstreetmap.org" crossOrigin="anonymous" />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-gray-900`}>
         <div className="min-h-dvh flex flex-col">
           <Navbar />

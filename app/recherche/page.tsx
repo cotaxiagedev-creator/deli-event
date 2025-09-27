@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
@@ -334,16 +335,25 @@ function SearchPage() {
           )}
           {!loadingListings && filtered.length > 0 && filtered.map((l) => (
             <div key={l.id} className="rounded-xl border border-black/5 bg-white p-5 hover:shadow-card transition">
-              <div className="aspect-video overflow-hidden rounded-lg bg-gradient-to-br from-teal-50 to-violet-50">
+              <div className="relative aspect-video overflow-hidden rounded-lg bg-gradient-to-br from-teal-50 to-violet-50">
                 {l.image ? (
-                  <>
-                    {/* Use next/image for optimization and lazy loading */}
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={l.image} alt={l.title} className="h-full w-full object-cover" loading="lazy" />
-                  </>
+                  <Image
+                    src={l.image}
+                    alt={l.title}
+                    fill
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                    className="object-cover"
+                    priority={false}
+                  />
                 ) : (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src="/logo.png" alt={l.title} className="h-full w-full object-contain p-6" />
+                  <Image
+                    src="/logo.png"
+                    alt={l.title}
+                    fill
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                    className="object-contain p-6"
+                    priority={false}
+                  />
                 )}
               </div>
               <h3 className="mt-3 font-medium text-gray-900">{l.title}</h3>

@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
 const navLinks = [
   { href: "/", label: "Accueil" },
@@ -15,6 +16,28 @@ const navLinks = [
 export default function Navbar() {
   const pathname = usePathname();
   const [logoError, setLogoError] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    const init = async () => {
+      if (!isSupabaseConfigured) return;
+      const { data } = await supabase.auth.getUser();
+      if (!mounted) return;
+      setUserId(data?.user?.id ?? null);
+    };
+    init();
+    if (isSupabaseConfigured) {
+      const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+        setUserId(session?.user?.id ?? null);
+      });
+      return () => {
+        mounted = false;
+        sub.subscription.unsubscribe();
+      };
+    }
+    return () => { mounted = false; };
+  }, []);
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-black/5 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
@@ -49,6 +72,23 @@ export default function Navbar() {
             </Link>
           ))}
         </nav>
+        <div className="hidden md:flex items-center gap-2">
+          {isSupabaseConfigured ? (
+            userId ? (
+              <>
+                <Link href="/compte/annonces" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-teal-700 hover:bg-teal-50">Mes annonces</Link>
+                <button
+                  onClick={() => supabase.auth.signOut()}
+                  className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-teal-700 hover:bg-teal-50"
+                >
+                  Se déconnecter
+                </button>
+              </>
+            ) : (
+              <Link href="/login" className="px-3 py-2 rounded-md text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 shadow">Se connecter</Link>
+            )
+          ) : null}
+        </div>
         <div className="md:hidden" />
       </div>
     </header>

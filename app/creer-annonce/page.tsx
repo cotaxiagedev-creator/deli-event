@@ -312,6 +312,7 @@ export default function CreateListingPage() {
                     key={`${s.display_name}-${s.lat}-${s.lon}`}
                     className="cursor-pointer px-3 py-2 hover:bg-teal-50"
                     role="option"
+                    aria-selected="false"
                     onClick={() => onSelectSuggestion(s)}
                   >
                     {s.display_name}

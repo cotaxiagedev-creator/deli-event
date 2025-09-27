@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { useToast } from "@/components/ToastProvider";
 
 const categories = [
   "Mobilier",
@@ -14,6 +15,7 @@ const categories = [
 ];
 
 export default function CreateListingPage() {
+  const { show } = useToast();
   const [title, setTitle] = useState("");
   const [cat, setCat] = useState("");
   const [price, setPrice] = useState("");
@@ -81,16 +83,19 @@ export default function CreateListingPage() {
 
     if (!title || !cat || !price || !location) {
       setError("Veuillez remplir les champs obligatoires (Titre, Catégorie, Prix, Localisation).");
+      show("error", "Champs obligatoires manquants");
       return;
     }
     const priceNum = Number(price);
     if (Number.isNaN(priceNum) || priceNum <= 0) {
       setError("Prix invalide. Entrez un nombre supérieur à 0.");
+      show("error", "Prix invalide");
       return;
     }
 
     if (!isSupabaseConfigured) {
       setError("Supabase n'est pas configuré (variables manquantes).");
+      show("error", "Supabase non configuré");
       return;
     }
 
@@ -131,6 +136,7 @@ export default function CreateListingPage() {
         } catch (e) {
           // If upload fails, keep fallback to typed URL (or null)
           console.warn("Image upload failed, falling back to typed URL", e);
+          show("error", "Échec de l'envoi de l'image, on garde l'URL saisie");
         }
       }
 
@@ -147,6 +153,7 @@ export default function CreateListingPage() {
       if (insertError) throw insertError;
 
       setMessage("Annonce publiée avec succès.");
+      show("success", "Annonce publiée avec succès");
       if (inserted?.id) setLastId(inserted.id);
       setTitle("");
       setCat("");
@@ -161,6 +168,7 @@ export default function CreateListingPage() {
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erreur lors de la publication";
       setError(msg);
+      show("error", msg || "Erreur lors de la publication");
     } finally {
       setLoading(false);
     }

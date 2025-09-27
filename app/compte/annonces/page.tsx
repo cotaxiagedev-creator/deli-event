@@ -68,7 +68,7 @@ export default function MyListingsPage() {
       <h1 className="text-3xl font-bold text-gray-900">Mes annonces</h1>
       {!isSupabaseConfigured && (
         <div className="mt-4 rounded-md border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800">
-          Supabase n'est pas configuré. Renseignez NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_ANON_KEY.
+          Supabase n&apos;est pas configuré. Renseignez NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_ANON_KEY.
         </div>
       )}
 

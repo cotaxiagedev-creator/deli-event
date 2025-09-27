@@ -16,7 +16,7 @@ export default function LoginPage() {
 
       {!isSupabaseConfigured && (
         <div className="mt-4 rounded-md border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800">
-          Supabase n'est pas configuré. Renseignez NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_ANON_KEY pour activer la connexion.
+          Supabase n&apos;est pas configuré. Renseignez NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_ANON_KEY pour activer la connexion.
         </div>
       )}
 
@@ -38,7 +38,7 @@ export default function LoginPage() {
             if (error) throw error;
             show("success", "Lien magique envoyé. Vérifiez votre boîte mail.");
           } catch (err) {
-            show("error", err instanceof Error ? err.message : "Erreur d'envoi");
+            show("error", err instanceof Error ? err.message : "Erreur d&apos;envoi");
           } finally {
             setBusy(false);
           }

@@ -11,8 +11,7 @@ import InstallPrompt from "@/components/InstallPrompt";
 import ToastProvider from "@/components/ToastProvider";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import dynamic from "next/dynamic";
-const AuthRedirect = dynamic(() => import("@/components/AuthRedirect"), { ssr: false });
+import AuthRedirect from "@/components/AuthRedirect";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

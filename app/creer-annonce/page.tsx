@@ -23,6 +23,7 @@ export default function CreateListingPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [lastId, setLastId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<Array<{ display_name: string; lat: string; lon: string }>>([]);
@@ -133,7 +134,7 @@ export default function CreateListingPage() {
         }
       }
 
-      const { error: insertError } = await supabase.from("listings").insert({
+      const { data: inserted, error: insertError } = await supabase.from("listings").insert({
         title,
         category: cat,
         price_per_day: priceNum,
@@ -142,10 +143,11 @@ export default function CreateListingPage() {
         location_lon: lon,
         image_url: finalImageUrl,
         tags: desc ? ["description"] : [],
-      });
+      }).select('id').single();
       if (insertError) throw insertError;
 
       setMessage("Annonce publiée avec succès.");
+      if (inserted?.id) setLastId(inserted.id);
       setTitle("");
       setCat("");
       setPrice("");

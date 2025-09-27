@@ -1,9 +1,0 @@
-# *
-User-agent: *
-Allow: /
-
-# Host
-Host: https://deli-event-2n62.vercel.app
-
-# Sitemaps
-Sitemap: https://deli-event-2n62.vercel.app/sitemap.xml

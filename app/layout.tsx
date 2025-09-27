@@ -7,6 +7,7 @@ export const viewport = {
   themeColor: "#40E0E0",
 };
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
+import InstallPrompt from "@/components/InstallPrompt";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -53,6 +54,7 @@ export default function RootLayout({
             {children}
           </main>
           <Footer />
+          <InstallPrompt />
           <ServiceWorkerRegistrar />
         </div>
       </body>

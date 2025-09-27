@@ -336,16 +336,11 @@ function SearchPage() {
             <div key={l.id} className="rounded-xl border border-black/5 bg-white p-5 hover:shadow-card transition">
               <div className="aspect-video overflow-hidden rounded-lg bg-gradient-to-br from-teal-50 to-violet-50">
                 {l.image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={l.image}
-                    alt={l.title}
-                    className="h-full w-full object-cover"
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).onerror = null;
-                      (e.currentTarget as HTMLImageElement).src = "/logo.png";
-                    }}
-                  />
+                  <>
+                    {/* Use next/image for optimization and lazy loading */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={l.image} alt={l.title} className="h-full w-full object-cover" loading="lazy" />
+                  </>
                 ) : (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src="/logo.png" alt={l.title} className="h-full w-full object-contain p-6" />

@@ -95,4 +95,5 @@ export default function RootLayout({
         </ToastProvider>
       </body>
     </html>
+  );
 }

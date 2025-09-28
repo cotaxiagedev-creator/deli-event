@@ -12,6 +12,7 @@ import ToastProvider from "@/components/ToastProvider";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import AuthRedirect from "@/components/AuthRedirect";
+import { Suspense } from "react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -85,12 +86,13 @@ export default function RootLayout({
             <Footer />
             <InstallPrompt />
             <ServiceWorkerRegistrar />
+            <Suspense fallback={null}>
+              <AuthRedirect />
+            </Suspense>
           </div>
           <Analytics />
           <SpeedInsights />
-          <AuthRedirect />
         </ToastProvider>
       </body>
     </html>
-  );
 }

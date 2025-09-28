@@ -24,7 +24,15 @@ export default function CTAAnnounceButton({ className }: { className?: string })
   const href = userId ? "/creer-annonce" : "/login?next=/creer-annonce&msg=connect_required";
 
   return (
-    <Link href={href} className={className}>
+    <Link
+      href={href}
+      className={className}
+      onClick={() => {
+        if (!userId && typeof window !== "undefined") {
+          try { localStorage.setItem("post_login_next", "/creer-annonce"); } catch {}
+        }
+      }}
+    >
       Déposer une annonce
     </Link>
   );

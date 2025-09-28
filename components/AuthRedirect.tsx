@@ -18,10 +18,15 @@ export default function AuthRedirect() {
       setTimeout(() => {
         const cleanUrl = window.location.pathname + window.location.search;
         window.history.replaceState(null, "", cleanUrl);
-        // If on login page, redirect to `next` or dashboard
+        // If on login page, redirect to `next` (URL or localStorage) or dashboard
         if (pathname === "/login") {
-          const next = sp?.get("next") || "/compte/annonces";
-          router.replace(next.startsWith("/") ? next : "/compte/annonces");
+          let next = sp?.get("next") || null;
+          if (!next && typeof window !== "undefined") {
+            try { next = localStorage.getItem("post_login_next"); } catch {}
+          }
+          const target = next && next.startsWith("/") ? next : "/compte/annonces";
+          try { localStorage.removeItem("post_login_next"); } catch {}
+          router.replace(target);
         } else if (pathname === "/") {
           router.replace("/compte/annonces");
         }
@@ -34,8 +39,13 @@ export default function AuthRedirect() {
         if (pathname === "/") {
           router.replace("/compte/annonces");
         } else if (pathname === "/login") {
-          const next = sp?.get("next") || "/compte/annonces";
-          router.replace(next.startsWith("/") ? next : "/compte/annonces");
+          let next = sp?.get("next") || null;
+          if (!next && typeof window !== "undefined") {
+            try { next = localStorage.getItem("post_login_next"); } catch {}
+          }
+          const target = next && next.startsWith("/") ? next : "/compte/annonces";
+          try { localStorage.removeItem("post_login_next"); } catch {}
+          router.replace(target);
         }
       }
     });

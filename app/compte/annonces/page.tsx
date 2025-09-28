@@ -86,7 +86,7 @@ export default function MyListingsPage() {
           {loading ? (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="rounded-xl border border-black/5 bg-white p-5">
+                <div key={i} className="rounded-xl border border-black/10 bg-white p-5">
                   <div className="aspect-video overflow-hidden rounded-lg bg-gray-100 animate-pulse" />
                   <div className="mt-3 h-4 w-2/3 bg-gray-100 animate-pulse rounded" />
                   <div className="mt-2 h-3 w-1/2 bg-gray-100 animate-pulse rounded" />
@@ -109,7 +109,7 @@ export default function MyListingsPage() {
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {items.map((l) => (
-                <div key={l.id} className="rounded-xl border border-black/5 bg-white p-5">
+                <div key={l.id} className="rounded-xl border border-black/10 bg-white p-5 hover:shadow-card transition">
                   <div className="relative aspect-video overflow-hidden rounded-lg bg-gray-50">
                     {l.image_url ? (
                       <Image src={l.image_url} alt={l.title} fill className="object-cover" sizes="(min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw" />
@@ -123,7 +123,7 @@ export default function MyListingsPage() {
                     <Link href={`/annonce/${l.id}`} className="inline-flex items-center justify-center rounded-md bg-teal-600 px-3 py-2 text-white shadow hover:bg-teal-700 transition text-sm">
                       Voir
                     </Link>
-                    <Link href={`/compte/annonces/${l.id}/edit`} className="inline-flex items-center justify-center rounded-md border border-teal-200 bg-white px-3 py-2 text-teal-700 hover:bg-teal-50 transition text-sm">
+                    <Link href={`/compte/annonces/${l.id}/edit`} className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-3 py-2 text-gray-700 hover:bg-gray-50 transition text-sm">
                       Éditer
                     </Link>
                     <button onClick={() => onDelete(l.id)} className="inline-flex items-center justify-center rounded-md border border-red-200 bg-white px-3 py-2 text-red-700 hover:bg-red-50 transition text-sm">

@@ -29,6 +29,7 @@ export default function ListingDetailPage() {
   const [cEmail, setCEmail] = useState("");
   const [cMsg, setCMsg] = useState("");
   const [busy, setBusy] = useState(false);
+  const [hp, setHp] = useState(""); // honeypot
   // Inline messages replaced by toasts
 
   useEffect(() => {
@@ -149,7 +150,7 @@ export default function ListingDetailPage() {
               const res = await fetch("/api/contact", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ listingId: listing.id, name: cName, email: cEmail, message: cMsg }),
+                body: JSON.stringify({ listingId: listing.id, name: cName, email: cEmail, message: cMsg, honeypot: hp }),
               });
               const data = await res.json();
               if (!res.ok || data?.ok !== true) {
@@ -164,6 +165,11 @@ export default function ListingDetailPage() {
             }
           }}
         >
+          {/* Honeypot anti-spam field (visually hidden) */}
+          <div className="hidden" aria-hidden>
+            <label>Votre site web</label>
+            <input type="text" tabIndex={-1} autoComplete="off" value={hp} onChange={(e) => setHp(e.target.value)} />
+          </div>
           <div className="sm:col-span-1">
             <label className="block text-sm font-medium text-gray-700">Nom</label>
             <input

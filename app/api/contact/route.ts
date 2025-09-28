@@ -4,11 +4,12 @@ import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
-    let { listingId, name, email, message } = body as {
+    let { listingId, name, email, message, honeypot } = body as {
       listingId?: string;
       name?: string;
       email?: string;
       message?: string;
+      honeypot?: string;
     };
 
     // Normalize inputs
@@ -16,6 +17,12 @@ export async function POST(req: Request) {
     name = typeof name === "string" ? name.trim() : undefined;
     email = typeof email === "string" ? email.trim().toLowerCase() : undefined;
     message = typeof message === "string" ? message.trim() : undefined;
+    const hp = typeof honeypot === "string" ? honeypot.trim() : "";
+
+    // Honeypot: if filled, silently accept without storing
+    if (hp) {
+      return NextResponse.json({ ok: true });
+    }
 
     if (!listingId || !name || !email || !message) {
       return NextResponse.json({ ok: false, error: "missing_fields" }, { status: 400 });

@@ -44,8 +44,8 @@ export default function CreateListingPage() {
       const { data } = await supabase.auth.getUser();
       setUserId(data?.user?.id ?? null);
       if (!data?.user?.id) {
-        // Redirect to login with a return path
-        router.push(`/login?next=${encodeURIComponent('/compte/annonces')}&msg=connect_required`);
+        // Redirect to login with a return path to the create page
+        router.push(`/login?next=${encodeURIComponent('/creer-annonce')}&msg=connect_required`);
       }
     };
     init();
@@ -250,7 +250,7 @@ export default function CreateListingPage() {
           <p className="font-medium">Connexion requise</p>
           <p className="text-sm mt-1">Vous devez être connecté pour déposer une annonce.</p>
           <div className="mt-3 flex gap-2">
-            <Link href="/login" className="inline-flex items-center justify-center rounded-md bg-teal-600 px-4 py-2 text-white shadow hover:bg-teal-700 transition text-sm">Se connecter</Link>
+            <Link href="/login?next=/creer-annonce&msg=connect_required" className="inline-flex items-center justify-center rounded-md bg-teal-600 px-4 py-2 text-white shadow hover:bg-teal-700 transition text-sm">Se connecter</Link>
             <Link href="/" className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-4 py-2 text-gray-700 hover:bg-gray-50 transition text-sm">Retour à l’accueil</Link>
           </div>
         </div>

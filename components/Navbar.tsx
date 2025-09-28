@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import CTAAnnounceButton from "@/components/CTAAnnounceButton";
 
 const navLinks = [
   { href: "/", label: "Accueil" },
@@ -62,15 +63,24 @@ export default function Navbar() {
         </Link>
         <nav className="hidden md:flex items-center gap-1">
           {navLinks.map(({ href, label }) => (
-            <Link
-              key={href}
-              href={href}
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors hover:text-teal-600 hover:bg-teal-50 ${
-                pathname === href ? "text-teal-700" : "text-gray-700"
-              }`}
-            >
-              {label}
-            </Link>
+            href === "/creer-annonce" ? (
+              <CTAAnnounceButton
+                key={href}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors hover:text-teal-600 hover:bg-teal-50 ${
+                  pathname === href ? "text-teal-700" : "text-gray-700"
+                }`}
+              />
+            ) : (
+              <Link
+                key={href}
+                href={href}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors hover:text-teal-600 hover:bg-teal-50 ${
+                  pathname === href ? "text-teal-700" : "text-gray-700"
+                }`}
+              >
+                {label}
+              </Link>
+            )
           ))}
         </nav>
         <div className="hidden md:flex items-center gap-2">
@@ -106,16 +116,25 @@ export default function Navbar() {
         <div className="md:hidden border-t border-black/5 bg-white/95 backdrop-blur">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3 flex flex-col gap-1">
             {navLinks.map(({ href, label }) => (
-              <Link
-                key={href}
-                href={href}
-                onClick={() => setMobileOpen(false)}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors hover:text-teal-700 hover:bg-teal-50 ${
-                  pathname === href ? "text-teal-700" : "text-gray-700"
-                }`}
-              >
-                {label}
-              </Link>
+              href === "/creer-annonce" ? (
+                <CTAAnnounceButton
+                  key={href}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors hover:text-teal-700 hover:bg-teal-50 ${
+                    pathname === href ? "text-teal-700" : "text-gray-700"
+                  }`}
+                />
+              ) : (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={() => setMobileOpen(false)}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors hover:text-teal-700 hover:bg-teal-50 ${
+                    pathname === href ? "text-teal-700" : "text-gray-700"
+                  }`}
+                >
+                  {label}
+                </Link>
+              )
             ))}
             {isSupabaseConfigured ? (
               userId ? (

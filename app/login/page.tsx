@@ -52,6 +52,8 @@ function LoginInner() {
           }
           try {
             setBusy(true);
+            // Persist the desired destination as a strong fallback
+            try { if (typeof window !== "undefined") localStorage.setItem("post_login_next", next); } catch {}
             const safeNext = next && next.startsWith("/") ? next : "/compte/annonces";
             const redirectTo = typeof window !== "undefined" ? `${window.location.origin}/login?next=${encodeURIComponent(safeNext)}` : undefined;
             const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo } });

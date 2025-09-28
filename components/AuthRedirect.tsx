@@ -28,7 +28,14 @@ export default function AuthRedirect() {
           try { localStorage.removeItem("post_login_next"); } catch {}
           router.replace(target);
         } else if (pathname === "/") {
-          router.replace("/compte/annonces");
+          // Also handle landing on root: honor next/localStorage if present
+          let next = sp?.get("next") || null;
+          if (!next && typeof window !== "undefined") {
+            try { next = localStorage.getItem("post_login_next"); } catch {}
+          }
+          const target = next && next.startsWith("/") ? next : "/compte/annonces";
+          try { localStorage.removeItem("post_login_next"); } catch {}
+          router.replace(target);
         }
       }, 250);
     }
@@ -37,7 +44,13 @@ export default function AuthRedirect() {
       if (event === "SIGNED_IN") {
         // If user just signed in and we're on home or login, route accordingly
         if (pathname === "/") {
-          router.replace("/compte/annonces");
+          let next = sp?.get("next") || null;
+          if (!next && typeof window !== "undefined") {
+            try { next = localStorage.getItem("post_login_next"); } catch {}
+          }
+          const target = next && next.startsWith("/") ? next : "/compte/annonces";
+          try { localStorage.removeItem("post_login_next"); } catch {}
+          router.replace(target);
         } else if (pathname === "/login") {
           let next = sp?.get("next") || null;
           if (!next && typeof window !== "undefined") {

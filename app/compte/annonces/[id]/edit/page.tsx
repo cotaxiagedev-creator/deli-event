@@ -125,7 +125,8 @@ export default function EditListingPage() {
       {loading ? (
         <div className="mt-6">Chargement…</div>
       ) : (
-        <form onSubmit={onSubmit} className="mt-6 grid gap-4">
+        <div className="mt-6 rounded-xl border border-black/10 bg-white p-6 shadow-sm">
+        <form onSubmit={onSubmit} className="grid gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Titre</label>
             <input
@@ -222,6 +223,7 @@ export default function EditListingPage() {
             </Link>
           </div>
         </form>
+        </div>
       )}
     </div>
   );

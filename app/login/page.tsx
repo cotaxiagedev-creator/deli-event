@@ -20,8 +20,9 @@ export default function LoginPage() {
         </div>
       )}
 
+      <div className="mt-6 rounded-xl border border-black/10 bg-white p-6 shadow-sm">
       <form
-        className="mt-6 grid gap-3"
+        className="grid gap-3"
         onSubmit={async (e) => {
           e.preventDefault();
           if (!email) {
@@ -62,6 +63,7 @@ export default function LoginPage() {
           {busy ? "Envoi…" : "Recevoir le lien"}
         </button>
       </form>
+      </div>
     </div>
   );
 }

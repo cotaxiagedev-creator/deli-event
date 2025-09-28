@@ -1,11 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { useToast } from "@/components/ToastProvider";
 
 export default function LoginPage() {
   const { show } = useToast();
+  const sp = useSearchParams();
+  const next = sp?.get("next") || "/compte/annonces";
+  const msg = sp?.get("msg") || null;
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -17,6 +21,11 @@ export default function LoginPage() {
       {!isSupabaseConfigured && (
         <div className="mt-4 rounded-md border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800">
           Supabase n&apos;est pas configuré. Renseignez NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_ANON_KEY pour activer la connexion.
+        </div>
+      )}
+      {msg === "connect_required" && (
+        <div className="mt-4 rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
+          Connexion requise pour déposer une annonce. Veuillez vous connecter.
         </div>
       )}
 
@@ -35,7 +44,7 @@ export default function LoginPage() {
           }
           try {
             setBusy(true);
-            const redirectTo = typeof window !== "undefined" ? `${window.location.origin}/compte/annonces` : undefined;
+            const redirectTo = typeof window !== "undefined" ? `${window.location.origin}${next.startsWith("/") ? next : "/compte/annonces"}` : undefined;
             const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo } });
             if (error) throw error;
             show("success", "Lien magique envoyé. Vérifiez votre boîte mail.");

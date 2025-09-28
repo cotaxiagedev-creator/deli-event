@@ -20,7 +20,7 @@ export default function Home() {
                 <a href="/categories" className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-5 py-3 text-gray-700 hover:bg-gray-50 transition">
                   Parcourir les catégories
                 </a>
-                <a href="/creer-annonce" className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-5 py-3 text-gray-700 hover:bg-gray-50 transition">
+                <a href="/login?next=/creer-annonce&msg=connect_required" className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-5 py-3 text-gray-700 hover:bg-gray-50 transition">
                   Déposer une annonce
                 </a>
               </div>

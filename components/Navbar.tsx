@@ -17,6 +17,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const [logoError, setLogoError] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -89,8 +90,53 @@ export default function Navbar() {
             )
           ) : null}
         </div>
-        <div className="md:hidden" />
+        {/* Mobile menu button */}
+        <div className="md:hidden">
+          <button
+            aria-label="Ouvrir le menu"
+            onClick={() => setMobileOpen((v) => !v)}
+            className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-3 py-2 text-gray-700 shadow-sm hover:bg-gray-50"
+          >
+            Menu
+          </button>
+        </div>
       </div>
+      {/* Mobile panel */}
+      {mobileOpen && (
+        <div className="md:hidden border-t border-black/5 bg-white/95 backdrop-blur">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3 flex flex-col gap-1">
+            {navLinks.map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                onClick={() => setMobileOpen(false)}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors hover:text-teal-700 hover:bg-teal-50 ${
+                  pathname === href ? "text-teal-700" : "text-gray-700"
+                }`}
+              >
+                {label}
+              </Link>
+            ))}
+            {isSupabaseConfigured ? (
+              userId ? (
+                <div className="mt-2 flex items-center gap-2">
+                  <Link href="/compte/annonces" onClick={() => setMobileOpen(false)} className="flex-1 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-teal-700 hover:bg-teal-50">Mes annonces</Link>
+                  <button
+                    onClick={() => { supabase.auth.signOut(); setMobileOpen(false); }}
+                    className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-teal-700 hover:bg-teal-50"
+                  >
+                    Se déconnecter
+                  </button>
+                </div>
+              ) : (
+                <Link href="/login" onClick={() => setMobileOpen(false)} className="mt-2 inline-flex items-center justify-center rounded-md bg-teal-600 px-3 py-2 text-white shadow hover:bg-teal-700 text-sm">
+                  Se connecter
+                </Link>
+              )
+            ) : null}
+          </div>
+        </div>
+      )}
     </header>
   );
 }

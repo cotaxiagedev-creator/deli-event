@@ -48,6 +48,29 @@ function SearchPage() {
     setSubmittedMsg(
       `Recherche appliquée — Lieu: ${selectedPlace?.name || query || "-"} • Rayon: ${radius} km • Date: ${date || "-"} • Catégorie: ${cat || "Toutes"}`
     );
+    // Save recent search (keep max 5)
+    try {
+      const now = Date.now();
+      const item = {
+        q: selectedPlace?.name || query || "",
+        cat,
+        date: date || "",
+        radius,
+        at: now,
+      };
+      const raw = typeof window !== "undefined" ? localStorage.getItem("recent_searches") : null;
+      const arr = raw ? (JSON.parse(raw) as any[]) : [];
+      const filtered = arr.filter((x) => !(x.q === item.q && x.cat === item.cat && x.radius === item.radius));
+      const nextArr = [item, ...filtered].slice(0, 5);
+      if (typeof window !== "undefined") localStorage.setItem("recent_searches", JSON.stringify(nextArr));
+      // Save recent location separately
+      if (item.q) {
+        const rawLoc = typeof window !== "undefined" ? localStorage.getItem("recent_locations") : null;
+        const locs = rawLoc ? (JSON.parse(rawLoc) as string[]) : [];
+        const nextLocs = [item.q, ...locs.filter((l) => l !== item.q)].slice(0, 5);
+        if (typeof window !== "undefined") localStorage.setItem("recent_locations", JSON.stringify(nextLocs));
+      }
+    } catch {}
   };
 
   // Debounce helper specialized for our query string use-case
@@ -236,6 +259,22 @@ function SearchPage() {
         Recherchez par lieu et date. La V1 utilise des données de démonstration (sans
         paiement, sans authentification).
       </p>
+
+      {/* Quick suggestions: categories + recent locations + recent searches */}
+      <RecentBlocks
+        onApplyCategory={(c) => setCat(c)}
+        onApplyLocation={(name) => {
+          setQuery(name);
+          setSelectedPlace({ name, lat: 0, lon: 0 });
+        }}
+        onApplySearch={(s) => {
+          setQuery(s.q);
+          setCat(s.cat || "");
+          setDate(s.date || "");
+          setRadius(s.radius || 10);
+          setSubmittedMsg(`Recherche rejouée — Lieu: ${s.q || "-"} • Rayon: ${s.radius} km • Date: ${s.date || "-"} • Catégorie: ${s.cat || "Toutes"}`);
+        }}
+      />
 
       {submittedMsg && (
         <div className="mt-4 rounded-md border border-teal-200 bg-teal-50 p-3 text-sm text-teal-800">
@@ -465,5 +504,95 @@ export default function Page() {
     <Suspense fallback={<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">Chargement…</div>}>
       <SearchPage />
     </Suspense>
+  );
+}
+
+function RecentBlocks({
+  onApplyCategory,
+  onApplyLocation,
+  onApplySearch,
+}: {
+  onApplyCategory: (c: string) => void;
+  onApplyLocation: (name: string) => void;
+  onApplySearch: (s: { q: string; cat?: string; date?: string; radius?: number }) => void;
+}) {
+  const [recentSearches, setRecentSearches] = useState<Array<{ q: string; cat?: string; date?: string; radius?: number; at?: number }>>([]);
+  const [recentLocations, setRecentLocations] = useState<string[]>([]);
+
+  useEffect(() => {
+    try {
+      const rs = typeof window !== "undefined" ? localStorage.getItem("recent_searches") : null;
+      const rl = typeof window !== "undefined" ? localStorage.getItem("recent_locations") : null;
+      if (rs) setRecentSearches(JSON.parse(rs));
+      if (rl) setRecentLocations(JSON.parse(rl));
+    } catch {}
+  }, []);
+
+  return (
+    <div className="mt-6 grid gap-4">
+      {/* Category suggestions */}
+      <div>
+        <p className="text-sm text-gray-600">Suggestions de catégories</p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {categories.map((c) => (
+            <button
+              key={c}
+              onClick={() => onApplyCategory(c)}
+              className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Recent locations */}
+      {recentLocations.length > 0 && (
+        <div>
+          <p className="text-sm text-gray-600">Lieux récents</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {recentLocations.map((name) => (
+              <button
+                key={name}
+                onClick={() => onApplyLocation(name)}
+                className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+              >
+                {name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Recent searches */}
+      {recentSearches.length > 0 && (
+        <div>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-gray-600">Recherches récentes</p>
+            <button
+              className="text-xs text-gray-500 hover:text-gray-700"
+              onClick={() => {
+                try { if (typeof window !== "undefined") localStorage.removeItem("recent_searches"); } catch {}
+                setRecentSearches([]);
+              }}
+            >
+              Effacer
+            </button>
+          </div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {recentSearches.map((s, i) => (
+              <button
+                key={i}
+                onClick={() => onApplySearch(s)}
+                className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+                title={`Lieu: ${s.q || '-'} • Cat: ${s.cat || 'Toutes'} • Rayon: ${s.radius || 10}km`}
+              >
+                {s.q || "(Lieu)"} • {s.cat || "Toutes"}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

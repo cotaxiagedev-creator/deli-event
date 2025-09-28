@@ -23,6 +23,7 @@ type Listing = {
   location: { name: string; lat: number; lon: number };
   image?: string;
   tags?: string[];
+  createdAt?: string; // ISO string
 };
 
 type ListingWithDistance = Listing & { _distance: number };
@@ -33,6 +34,7 @@ function SearchPage() {
   const [date, setDate] = useState("");
   const [cat, setCat] = useState("");
   const [radius, setRadius] = useState(10); // km
+  const [sortBy, setSortBy] = useState<"recent" | "price_asc" | "price_desc">("recent");
   const [suggestions, setSuggestions] = useState<Array<{ display_name: string; lat: string; lon: string }>>([]);
   const [loadingSuggest, setLoadingSuggest] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState<{ name: string; lat: number; lon: number } | null>(null);
@@ -113,7 +115,7 @@ function SearchPage() {
         if (isSupabaseConfigured) {
           const { data, error } = await supabase
             .from("listings")
-            .select("id, title, category, price_per_day, location_name, location_lat, location_lon, image_url, tags")
+            .select("id, title, category, price_per_day, location_name, location_lat, location_lon, image_url, tags, created_at")
             .order("created_at", { ascending: false })
             .limit(50);
           if (!error && data && data.length > 0) {
@@ -127,6 +129,7 @@ function SearchPage() {
               location_lon: number | null;
               image_url: string | null;
               tags: string[] | null;
+              created_at?: string | null;
             };
             const rows = (data as unknown as ListingRow[]) || [];
             const mapped: Listing[] = rows.map((row) => ({
@@ -141,6 +144,7 @@ function SearchPage() {
               },
               image: row.image_url ?? undefined,
               tags: Array.isArray(row.tags) ? row.tags : undefined,
+              createdAt: row.created_at ?? undefined,
             }));
             setListings(mapped);
             loaded = true;
@@ -149,7 +153,12 @@ function SearchPage() {
         if (!loaded) {
           const res = await fetch("/listings.json", { cache: "no-store" });
           const data: Listing[] = await res.json();
-          setListings(data);
+          setListings(
+            data.map((d) => ({
+              ...d,
+              createdAt: d.createdAt || new Date().toISOString(),
+            }))
+          );
         }
       } catch {
         // noop
@@ -183,6 +192,7 @@ function SearchPage() {
   const filtered: Array<Listing | ListingWithDistance> = useMemo(() => {
     let arr: Listing[] = listings;
     if (cat) arr = arr.filter((l) => l.category === cat);
+    let base: Array<Listing | ListingWithDistance> = arr;
     if (selectedPlace) {
       const withCoords = arr.filter((l) =>
         Number.isFinite(l.location?.lat) &&
@@ -199,15 +209,25 @@ function SearchPage() {
         ),
       }));
 
-      const inRadius = withDist
-        .filter((l) => l._distance <= radius)
-        .sort((a, b) => a._distance - b._distance);
-
-      // Concat: d'abord résultats triés avec distance, puis ceux sans coordonnées
-      return [...inRadius, ...withoutCoords];
+      const inRadius = withDist.filter((l) => l._distance <= radius);
+      base = [...inRadius, ...withoutCoords];
     }
-    return arr;
-  }, [listings, cat, selectedPlace, radius]);
+
+    // Sorting
+    const sorted = [...base];
+    if (sortBy === "recent") {
+      sorted.sort((a, b) => {
+        const ca = (a as Listing).createdAt ?? "";
+        const cb = (b as Listing).createdAt ?? "";
+        return (cb > ca ? 1 : cb < ca ? -1 : 0);
+      });
+    } else if (sortBy === "price_asc") {
+      sorted.sort((a, b) => (a.pricePerDay || 0) - (b.pricePerDay || 0));
+    } else if (sortBy === "price_desc") {
+      sorted.sort((a, b) => (b.pricePerDay || 0) - (a.pricePerDay || 0));
+    }
+    return sorted;
+  }, [listings, cat, selectedPlace, radius, sortBy]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
@@ -305,12 +325,40 @@ function SearchPage() {
             className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
           />
         </div>
-        <div className="sm:col-span-6">
+        <div className="sm:col-span-1">
+          <label className="block text-sm font-medium text-gray-700">Tri</label>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as any)}
+            className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900"
+          >
+            <option value="recent">Plus récent</option>
+            <option value="price_asc">Prix croissant</option>
+            <option value="price_desc">Prix décroissant</option>
+          </select>
+        </div>
+        <div className="sm:col-span-5 flex items-end justify-between gap-3">
           <button
             type="submit"
             className="inline-flex items-center justify-center rounded-md bg-teal-600 px-5 py-3 text-white shadow hover:bg-teal-700 transition"
           >
             Rechercher
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setCat("");
+              setSelectedPlace(null);
+              setQuery("");
+              setSuggestions([]);
+              setDate("");
+              setRadius(10);
+              setSortBy("recent");
+              setSubmittedMsg(null);
+            }}
+            className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-4 py-3 text-gray-700 hover:bg-gray-50 transition"
+          >
+            Réinitialiser les filtres
           </button>
         </div>
       </form>

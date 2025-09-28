@@ -18,6 +18,8 @@ export default function EditListingPage() {
   const [price, setPrice] = useState<string>("");
   const [locationName, setLocationName] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -66,6 +68,25 @@ export default function EditListingPage() {
     }
     try {
       setLoading(true);
+      // If a new file is provided, upload it and update imageUrl
+      let finalImageUrl: string | null = imageUrl || null;
+      if (imageFile) {
+        try {
+          const safeName = imageFile.name.replace(/[^a-zA-Z0-9._-]+/g, "-");
+          const path = `listings/${Date.now()}-${safeName}`;
+          const { error: upErr } = await supabase.storage.from("listings").upload(path, imageFile, {
+            cacheControl: "3600",
+            upsert: false,
+            contentType: imageFile.type || "image/*",
+          });
+          if (upErr) throw upErr;
+          const { data: pub } = supabase.storage.from("listings").getPublicUrl(path);
+          if (pub?.publicUrl) finalImageUrl = pub.publicUrl;
+        } catch (e) {
+          console.warn("Image upload failed on edit", e);
+          show("error", "Échec de l'envoi de l'image, on garde l'URL actuelle");
+        }
+      }
       const { error } = await supabase
         .from("listings")
         .update({
@@ -73,7 +94,7 @@ export default function EditListingPage() {
           category,
           price_per_day: priceNum,
           location_name: locationName,
-          image_url: imageUrl || null,
+          image_url: finalImageUrl,
         })
         .eq("id", id);
       if (error) throw error;
@@ -153,6 +174,29 @@ export default function EditListingPage() {
               className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
               placeholder="https://…"
             />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Image (fichier)</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const f = e.target.files?.[0] || null;
+                setImageFile(f);
+                if (f) {
+                  const url = URL.createObjectURL(f);
+                  setImagePreview(url);
+                } else {
+                  setImagePreview(null);
+                }
+              }}
+              className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900"
+            />
+            {imagePreview && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={imagePreview} alt="Prévisualisation" className="mt-2 h-32 w-full object-cover rounded-md" />
+            )}
+            <p className="mt-1 text-xs text-gray-500">Si un fichier est choisi, il sera envoyé dans le bucket Supabase `listings` et remplacera l'image.</p>
           </div>
 
           <div className="flex gap-3 pt-2">

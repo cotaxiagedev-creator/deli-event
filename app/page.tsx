@@ -1,3 +1,4 @@
+import CTAAnnounceButton from "@/components/CTAAnnounceButton";
 
 export default function Home() {
   return (
@@ -20,9 +21,7 @@ export default function Home() {
                 <a href="/categories" className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-5 py-3 text-gray-700 hover:bg-gray-50 transition">
                   Parcourir les catégories
                 </a>
-                <a href="/login?next=/creer-annonce&msg=connect_required" className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-5 py-3 text-gray-700 hover:bg-gray-50 transition">
-                  Déposer une annonce
-                </a>
+                <CTAAnnounceButton className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-5 py-3 text-gray-700 hover:bg-gray-50 transition" />
               </div>
               <div className="mt-6 flex items-center gap-4 text-sm text-gray-700">
                 <div className="flex items-center gap-2">

@@ -58,8 +58,9 @@ function SearchPage() {
         radius,
         at: now,
       };
+      type RecentSearch = { q: string; cat?: string; date?: string; radius?: number; at?: number };
       const raw = typeof window !== "undefined" ? localStorage.getItem("recent_searches") : null;
-      const arr = raw ? (JSON.parse(raw) as any[]) : [];
+      const arr: RecentSearch[] = raw ? JSON.parse(raw) as RecentSearch[] : [];
       const filtered = arr.filter((x) => !(x.q === item.q && x.cat === item.cat && x.radius === item.radius));
       const nextArr = [item, ...filtered].slice(0, 5);
       if (typeof window !== "undefined") localStorage.setItem("recent_searches", JSON.stringify(nextArr));

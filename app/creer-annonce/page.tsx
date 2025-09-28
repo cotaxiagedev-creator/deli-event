@@ -49,7 +49,7 @@ export default function CreateListingPage() {
       }
     };
     init();
-  }, []);
+  }, [router]);
 
   // Debounce helper specialized for our query string use-case
   const debounce = (fn: (q: string) => unknown, delay = 300) => {

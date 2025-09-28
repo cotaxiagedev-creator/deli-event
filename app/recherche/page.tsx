@@ -370,7 +370,7 @@ function SearchPage() {
           {loadingListings && (
             <>
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="rounded-xl border border-black/5 bg-white p-5">
+                <div key={i} className="rounded-xl border border-black/10 bg-white p-5">
                   <div className="aspect-video overflow-hidden rounded-lg bg-gray-100 animate-pulse" />
                   <div className="mt-3 h-4 w-2/3 bg-gray-100 animate-pulse rounded" />
                   <div className="mt-2 h-3 w-1/2 bg-gray-100 animate-pulse rounded" />
@@ -383,8 +383,8 @@ function SearchPage() {
             </>
           )}
           {!loadingListings && filtered.length > 0 && filtered.map((l) => (
-            <div key={l.id} className="rounded-xl border border-black/5 bg-white p-5 hover:shadow-card transition">
-              <div className="relative aspect-video overflow-hidden rounded-lg bg-gradient-to-br from-teal-50 to-violet-50">
+            <div key={l.id} className="rounded-xl border border-black/10 bg-white p-5 hover:shadow-card transition">
+              <div className="relative aspect-video overflow-hidden rounded-lg bg-gray-50">
                 {l.image ? (
                   <Image
                     src={l.image}
@@ -414,9 +414,9 @@ function SearchPage() {
               </p>
               <p className="mt-1 text-xs text-gray-500">{l.location?.name}</p>
               <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                <span className="rounded bg-teal-50 px-2 py-1 text-teal-700 border border-teal-100">{l.category}</span>
+                <span className="rounded bg-teal-50 px-2 py-1 text-teal-700 border border-black/10">{l.category}</span>
                 {l.tags?.slice(0, 2).map((t: string) => (
-                  <span key={t} className="rounded bg-violet-50 px-2 py-1 text-violet-700 border border-violet-100">{t}</span>
+                  <span key={t} className="rounded bg-violet-50 px-2 py-1 text-violet-700 border border-black/10">{t}</span>
                 ))}
               </div>
               <div className="mt-4 flex gap-2">
@@ -428,7 +428,7 @@ function SearchPage() {
                 </Link>
                 <a
                   href={`/contact?subject=${encodeURIComponent("Demande d’information • " + l.title)}&name=&email=`}
-                  className="inline-flex items-center justify-center rounded-md border border-teal-200 bg-white px-3 py-2 text-teal-700 hover:bg-teal-50 transition text-sm"
+                  className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-3 py-2 text-gray-700 hover:bg-gray-50 transition text-sm"
                 >
                   Contacter
                 </a>

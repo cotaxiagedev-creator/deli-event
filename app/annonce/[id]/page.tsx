@@ -104,7 +104,7 @@ export default function ListingDetailPage() {
       <p className="mt-1 text-gray-600">Catégorie: {listing.category}</p>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <div className="relative aspect-video overflow-hidden rounded-lg bg-gradient-to-br from-teal-50 to-violet-50">
+        <div className="relative aspect-video overflow-hidden rounded-lg bg-gray-50">
           {listing.image ? (
             <Image src={listing.image} alt={listing.title} fill className="object-cover" sizes="(min-width: 1024px) 50vw, 100vw" />
           ) : (
@@ -122,16 +122,16 @@ export default function ListingDetailPage() {
           {listing.tags && listing.tags.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-2 text-xs">
               {listing.tags.map((t) => (
-                <span key={t} className="rounded bg-violet-50 px-2 py-1 text-violet-700 border border-violet-100">{t}</span>
+                <span key={t} className="rounded bg-violet-50 px-2 py-1 text-violet-700 border border-black/10">{t}</span>
               ))}
             </div>
           )}
           <div className="mt-6 flex gap-2">
             <Link href={`/contact?subject=${encodeURIComponent("Demande d’information • " + listing.title)}&name=&email=`}
-              className="inline-flex items-center justify-center rounded-md border border-teal-200 bg-white px-4 py-2 text-teal-700 hover:bg-teal-50 transition">
+              className="inline-flex items-center justify-center rounded-md bg-teal-600 px-4 py-2 text-white shadow hover:bg-teal-700 transition">
               Contacter
             </Link>
-            <Link href="/recherche" className="inline-flex items-center justify-center rounded-md bg-teal-600 px-4 py-2 text-white shadow hover:bg-teal-700 transition">
+            <Link href="/recherche" className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-4 py-2 text-gray-700 hover:bg-gray-50 transition">
               Retour à la recherche
             </Link>
           </div>

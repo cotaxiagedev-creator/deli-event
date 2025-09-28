@@ -46,6 +46,7 @@ export default function ListingDetailPage() {
             .eq("id", id)
             .maybeSingle();
           if (!error && data) {
+            const row: { phone?: string | null } = data as { phone?: string | null };
             setListing({
               id: data.id,
               title: data.title,
@@ -58,7 +59,7 @@ export default function ListingDetailPage() {
               },
               image: data.image_url ?? undefined,
               tags: data.tags ?? undefined,
-              phone: (data as any).phone ?? null,
+              phone: row.phone ?? null,
             });
             loaded = true;
           }

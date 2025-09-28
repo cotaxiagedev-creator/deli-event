@@ -47,7 +47,8 @@ export default function EditListingPage() {
         setPrice(String(data.price_per_day ?? ""));
         setLocationName(data.location_name || "");
         setImageUrl(data.image_url || "");
-        setPhone((data as any).phone || "");
+        const row: { phone?: string | null } = data as { phone?: string | null };
+        setPhone(row.phone || "");
       } catch (e) {
         show("error", e instanceof Error ? e.message : "Chargement impossible");
       } finally {

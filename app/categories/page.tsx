@@ -14,7 +14,7 @@ export default function CategoriesPage() {
       <p className="mt-2 text-gray-600">Parcourez les catégories pour trouver le matériel idéal.</p>
       <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {categories.map((c) => (
-          <div key={c.name} className={`rounded-xl border border-black/5 bg-gradient-to-br ${c.color} p-5 hover:shadow-card transition`}>
+          <div key={c.name} className={`rounded-xl border border-black/10 bg-gradient-to-br ${c.color} p-5 hover:shadow-card transition`}>
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900">{c.name}</h2>
               <span className="text-xs text-teal-700 bg-teal-50 border border-teal-100 px-2 py-1 rounded">Populaire</span>

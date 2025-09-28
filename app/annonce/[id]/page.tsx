@@ -141,8 +141,22 @@ export default function ListingDetailPage() {
           className="mt-4 grid gap-4 sm:grid-cols-2"
           onSubmit={async (e) => {
             e.preventDefault();
+            // Client-side validation to avoid 400 when possible
+            const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!cName || !cEmail || !cMsg) {
               show("error", "Veuillez renseigner nom, e‑mail et message.");
+              return;
+            }
+            if (cName.trim().length < 2) {
+              show("error", "Votre nom doit contenir au moins 2 caractères.");
+              return;
+            }
+            if (!emailRe.test(cEmail.trim())) {
+              show("error", "Adresse e‑mail invalide.");
+              return;
+            }
+            if (cMsg.trim().length < 10) {
+              show("error", "Votre message doit contenir au moins 10 caractères.");
               return;
             }
             try {
@@ -154,7 +168,18 @@ export default function ListingDetailPage() {
               });
               const data = await res.json();
               if (!res.ok || data?.ok !== true) {
-                throw new Error(data?.error || "Envoi impossible");
+                const code = data?.error as string | undefined;
+                const map: Record<string, string> = {
+                  missing_fields: "Veuillez remplir tous les champs.",
+                  invalid_email: "Adresse e‑mail invalide.",
+                  invalid_name_length: "Votre nom doit contenir entre 2 et 100 caractères.",
+                  invalid_email_length: "Votre e‑mail semble invalide.",
+                  invalid_message_length: "Votre message doit contenir entre 10 et 2000 caractères.",
+                  duplicate_recent: "Vous avez déjà envoyé un message récemment. Réessayez dans quelques minutes.",
+                  server_error: "Le serveur ne peut pas traiter la demande pour le moment.",
+                };
+                const msg = (code && map[code]) || "Envoi impossible";
+                throw new Error(msg);
               }
               show("success", "Message envoyé au propriétaire");
               setCMsg("");

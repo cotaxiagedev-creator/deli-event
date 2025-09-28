@@ -196,7 +196,7 @@ export default function EditListingPage() {
               // eslint-disable-next-line @next/next/no-img-element
               <img src={imagePreview} alt="Prévisualisation" className="mt-2 h-32 w-full object-cover rounded-md" />
             )}
-            <p className="mt-1 text-xs text-gray-500">Si un fichier est choisi, il sera envoyé dans le bucket Supabase `listings` et remplacera l'image.</p>
+            <p className="mt-1 text-xs text-gray-500">Si un fichier est choisi, il sera envoyé dans le bucket Supabase `listings` et remplacera l&apos;image.</p>
           </div>
 
           <div className="flex gap-3 pt-2">

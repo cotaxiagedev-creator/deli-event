@@ -20,6 +20,7 @@ export default function EditListingPage() {
   const [imageUrl, setImageUrl] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [phone, setPhone] = useState<string>("");
 
   useEffect(() => {
     const load = async () => {
@@ -32,7 +33,7 @@ export default function EditListingPage() {
         setLoading(true);
         const { data, error } = await supabase
           .from("listings")
-          .select("id, title, category, price_per_day, location_name, image_url")
+          .select("id, title, category, price_per_day, location_name, image_url, phone")
           .eq("id", id)
           .maybeSingle();
         if (error) throw error;
@@ -46,6 +47,7 @@ export default function EditListingPage() {
         setPrice(String(data.price_per_day ?? ""));
         setLocationName(data.location_name || "");
         setImageUrl(data.image_url || "");
+        setPhone((data as any).phone || "");
       } catch (e) {
         show("error", e instanceof Error ? e.message : "Chargement impossible");
       } finally {
@@ -95,6 +97,7 @@ export default function EditListingPage() {
           price_per_day: priceNum,
           location_name: locationName,
           image_url: finalImageUrl,
+          phone: phone || null,
         })
         .eq("id", id);
       if (error) throw error;
@@ -173,6 +176,16 @@ export default function EditListingPage() {
               onChange={(e) => setImageUrl(e.target.value)}
               className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
               placeholder="https://…"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Téléphone (optionnel)</label>
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
+              placeholder="Ex: 06 12 34 56 78"
             />
           </div>
           <div>

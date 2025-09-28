@@ -21,6 +21,7 @@ export default function CreateListingPage() {
   const [price, setPrice] = useState("");
   const [desc, setDesc] = useState("");
   const [location, setLocation] = useState("");
+  const [phone, setPhone] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -153,6 +154,7 @@ export default function CreateListingPage() {
         image_url: finalImageUrl,
         tags: desc ? ["description"] : [],
         owner_id: ownerId,
+        phone: phone || null,
       }).select('id').single();
       if (insertError) throw insertError;
 
@@ -164,6 +166,7 @@ export default function CreateListingPage() {
       setPrice("");
       setDesc("");
       setLocation("");
+      setPhone("");
       setImageUrl("");
       setImageFile(null);
       setImagePreview(null);
@@ -263,6 +266,17 @@ export default function CreateListingPage() {
               name="price"
             />
           </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Téléphone (optionnel)</label>
+          <input
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="Ex: 06 12 34 56 78"
+            className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
+          />
+          <p className="mt-1 text-xs text-gray-500">Affiché sur la fiche si renseigné.</p>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Localisation *</label>

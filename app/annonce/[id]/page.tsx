@@ -16,6 +16,7 @@ type Listing = {
   image?: string | null;
   tags?: string[] | null;
   description?: string | null;
+  phone?: string | null;
 };
 
 export default function ListingDetailPage() {
@@ -41,7 +42,7 @@ export default function ListingDetailPage() {
         if (isSupabaseConfigured) {
           const { data, error } = await supabase
             .from("listings")
-            .select("id, title, category, price_per_day, location_name, location_lat, location_lon, image_url, tags")
+            .select("id, title, category, price_per_day, location_name, location_lat, location_lon, image_url, tags, phone")
             .eq("id", id)
             .maybeSingle();
           if (!error && data) {
@@ -57,6 +58,7 @@ export default function ListingDetailPage() {
               },
               image: data.image_url ?? undefined,
               tags: data.tags ?? undefined,
+              phone: (data as any).phone ?? null,
             });
             loaded = true;
           }
@@ -112,6 +114,9 @@ export default function ListingDetailPage() {
           <p className="text-xl font-semibold text-gray-900">{listing.pricePerDay}€ / jour</p>
           {listing.location?.name && (
             <p className="mt-1 text-sm text-gray-600">Lieu: {listing.location.name}</p>
+          )}
+          {listing.phone && (
+            <p className="mt-1 text-sm text-gray-600">Téléphone: <span className="font-medium text-gray-900">{listing.phone}</span></p>
           )}
           {listing.tags && listing.tags.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-2 text-xs">

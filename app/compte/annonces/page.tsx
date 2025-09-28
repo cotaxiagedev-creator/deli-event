@@ -84,7 +84,19 @@ export default function MyListingsPage() {
       {isSupabaseConfigured && userId && (
         <div className="mt-8">
           {loading ? (
-            <div>Chargement…</div>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="rounded-xl border border-black/5 bg-white p-5">
+                  <div className="aspect-video overflow-hidden rounded-lg bg-gray-100 animate-pulse" />
+                  <div className="mt-3 h-4 w-2/3 bg-gray-100 animate-pulse rounded" />
+                  <div className="mt-2 h-3 w-1/2 bg-gray-100 animate-pulse rounded" />
+                  <div className="mt-3 flex gap-2">
+                    <span className="h-8 w-20 bg-gray-100 animate-pulse rounded" />
+                    <span className="h-8 w-24 bg-gray-100 animate-pulse rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : items.length === 0 ? (
             <div className="rounded-md border border-gray-200 p-6 text-center text-gray-600">
               Aucune annonce pour le moment.

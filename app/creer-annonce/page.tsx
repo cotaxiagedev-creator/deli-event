@@ -37,6 +37,18 @@ export default function CreateListingPage() {
   const abortRef = useRef<AbortController | null>(null);
   const [locLat, setLocLat] = useState<number | null>(null);
   const [locLon, setLocLon] = useState<number | null>(null);
+  // Local draft & prefill helpers
+  const [hasDraft, setHasDraft] = useState(false);
+  const [showDraftBanner, setShowDraftBanner] = useState(false);
+  type Draft = {
+    title?: string;
+    cat?: string;
+    price?: string;
+    desc?: string;
+    location?: string;
+    phone?: string;
+    imageUrl?: string;
+  };
 
   useEffect(() => {
     const init = async () => {
@@ -50,6 +62,58 @@ export default function CreateListingPage() {
     };
     init();
   }, [router]);
+
+  // Load draft or last-used defaults on mount (client-side only)
+  useEffect(() => {
+    try {
+      if (typeof window === "undefined") return;
+      const raw = localStorage.getItem("draft_create_listing_v1");
+      if (raw) {
+        setHasDraft(true);
+        setShowDraftBanner(true);
+      } else {
+        // Prefill last-used defaults if fields are empty
+        const lastCat = localStorage.getItem("last_category");
+        const lastLoc = localStorage.getItem("last_location_name");
+        const lastPhone = localStorage.getItem("last_phone");
+        if (!cat && lastCat) setCat(lastCat);
+        if (!location && lastLoc) setLocation(lastLoc);
+        if (!phone && lastPhone) setPhone(lastPhone);
+      }
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const applyDraft = () => {
+    try {
+      const raw = typeof window !== "undefined" ? localStorage.getItem("draft_create_listing_v1") : null;
+      if (!raw) return;
+      const d: Draft = JSON.parse(raw);
+      if (d.title) setTitle(d.title);
+      if (d.cat) setCat(d.cat);
+      if (d.price) setPrice(d.price);
+      if (d.desc) setDesc(d.desc);
+      if (d.location) setLocation(d.location);
+      if (d.phone) setPhone(d.phone);
+      if (d.imageUrl) setImageUrl(d.imageUrl);
+      setShowDraftBanner(false);
+    } catch {}
+  };
+
+  const discardDraft = () => {
+    try { if (typeof window !== "undefined") localStorage.removeItem("draft_create_listing_v1"); } catch {}
+    setHasDraft(false);
+    setShowDraftBanner(false);
+  };
+
+  // Autosave draft on changes (debounced by browser event loop suffice here)
+  useEffect(() => {
+    try {
+      if (typeof window === "undefined") return;
+      const draft: Draft = { title, cat, price, desc, location, phone, imageUrl };
+      localStorage.setItem("draft_create_listing_v1", JSON.stringify(draft));
+    } catch {}
+  }, [title, cat, price, desc, location, phone, imageUrl]);
 
   // Debounce helper specialized for our query string use-case
   const debounce = (fn: (q: string) => unknown, delay = 300) => {
@@ -183,6 +247,15 @@ export default function CreateListingPage() {
       setMessage("Annonce publiée avec succès.");
       show("success", "Annonce publiée avec succès");
       if (inserted?.id) setLastId(inserted.id);
+      // Persist last-used defaults and clear draft
+      try {
+        if (typeof window !== "undefined") {
+          if (cat) localStorage.setItem("last_category", cat);
+          if (location) localStorage.setItem("last_location_name", location);
+          if (phone) localStorage.setItem("last_phone", phone);
+          localStorage.removeItem("draft_create_listing_v1");
+        }
+      } catch {}
       setTitle("");
       setCat("");
       setPrice("");
@@ -242,6 +315,17 @@ export default function CreateListingPage() {
           >
             Aller à la recherche
           </Link>
+        </div>
+      )}
+
+      {showDraftBanner && hasDraft && (
+        <div className="mt-6 rounded-xl border border-blue-200 bg-blue-50 p-4 text-blue-800">
+          <p className="font-medium">Brouillon trouvé</p>
+          <p className="text-sm mt-1">Vous avez un brouillon local de votre annonce. Voulez-vous le reprendre ?</p>
+          <div className="mt-3 flex gap-2">
+            <button type="button" onClick={applyDraft} className="inline-flex items-center justify-center rounded-md bg-teal-600 px-4 py-2 text-white shadow hover:bg-teal-700 transition text-sm">Reprendre</button>
+            <button type="button" onClick={discardDraft} className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-4 py-2 text-gray-700 hover:bg-gray-50 transition text-sm">Ignorer</button>
+          </div>
         </div>
       )}
 

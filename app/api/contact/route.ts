@@ -4,13 +4,13 @@ import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
-    let { listingId, name, email, message, honeypot } = body as {
+    let { listingId, name, email, message } = body as {
       listingId?: string;
       name?: string;
       email?: string;
       message?: string;
-      honeypot?: string;
     };
+    const { honeypot } = body as { honeypot?: string };
 
     // Normalize inputs
     listingId = typeof listingId === "string" ? listingId.trim() : undefined;

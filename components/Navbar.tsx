@@ -87,6 +87,7 @@ export default function Navbar() {
           {isSupabaseConfigured ? (
             userId ? (
               <>
+                <Link href="/compte/profil" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-teal-700 hover:bg-teal-50">Mon profil</Link>
                 <Link href="/compte/annonces" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-teal-700 hover:bg-teal-50">Mes annonces</Link>
                 <button
                   onClick={() => supabase.auth.signOut()}
@@ -139,6 +140,7 @@ export default function Navbar() {
             {isSupabaseConfigured ? (
               userId ? (
                 <div className="mt-2 flex items-center gap-2">
+                  <Link href="/compte/profil" onClick={() => setMobileOpen(false)} className="flex-1 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-teal-700 hover:bg-teal-50">Mon profil</Link>
                   <Link href="/compte/annonces" onClick={() => setMobileOpen(false)} className="flex-1 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-teal-700 hover:bg-teal-50">Mes annonces</Link>
                   <button
                     onClick={() => { supabase.auth.signOut(); setMobileOpen(false); }}

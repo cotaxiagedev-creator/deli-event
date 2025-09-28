@@ -52,7 +52,8 @@ function LoginInner() {
           }
           try {
             setBusy(true);
-            const redirectTo = typeof window !== "undefined" ? `${window.location.origin}${next.startsWith("/") ? next : "/compte/annonces"}` : undefined;
+            const safeNext = next && next.startsWith("/") ? next : "/compte/annonces";
+            const redirectTo = typeof window !== "undefined" ? `${window.location.origin}/login?next=${encodeURIComponent(safeNext)}` : undefined;
             const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo } });
             if (error) throw error;
             show("success", "Lien magique envoyé. Vérifiez votre boîte mail.");

@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { useToast } from "@/components/ToastProvider";
 
@@ -16,6 +17,8 @@ const categories = [
 
 export default function CreateListingPage() {
   const { show } = useToast();
+  const router = useRouter();
+  const [userId, setUserId] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [cat, setCat] = useState("");
   const [price, setPrice] = useState("");
@@ -34,6 +37,19 @@ export default function CreateListingPage() {
   const abortRef = useRef<AbortController | null>(null);
   const [locLat, setLocLat] = useState<number | null>(null);
   const [locLon, setLocLon] = useState<number | null>(null);
+
+  useEffect(() => {
+    const init = async () => {
+      if (!isSupabaseConfigured) return;
+      const { data } = await supabase.auth.getUser();
+      setUserId(data?.user?.id ?? null);
+      if (!data?.user?.id) {
+        // Redirect to login with a return path
+        router.push(`/login?next=${encodeURIComponent('/compte/annonces')}&msg=connect_required`);
+      }
+    };
+    init();
+  }, []);
 
   // Debounce helper specialized for our query string use-case
   const debounce = (fn: (q: string) => unknown, delay = 300) => {
@@ -99,6 +115,12 @@ export default function CreateListingPage() {
       show("error", "Supabase non configuré");
       return;
     }
+    if (!userId) {
+      setError("Vous devez être connecté pour déposer une annonce.");
+      show("error", "Connectez-vous pour déposer une annonce");
+      router.push("/login");
+      return;
+    }
 
     try {
       setLoading(true);
@@ -141,8 +163,8 @@ export default function CreateListingPage() {
         }
       }
 
-      const { data: userData } = await supabase.auth.getUser();
-      const ownerId = userData?.user?.id ?? null;
+      // owner_id must be the logged-in user (userId is guaranteed here)
+      const ownerId = userId;
 
       const { data: inserted, error: insertError } = await supabase.from("listings").insert({
         title,
@@ -223,6 +245,17 @@ export default function CreateListingPage() {
         </div>
       )}
 
+      {isSupabaseConfigured && !userId && (
+        <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-800">
+          <p className="font-medium">Connexion requise</p>
+          <p className="text-sm mt-1">Vous devez être connecté pour déposer une annonce.</p>
+          <div className="mt-3 flex gap-2">
+            <Link href="/login" className="inline-flex items-center justify-center rounded-md bg-teal-600 px-4 py-2 text-white shadow hover:bg-teal-700 transition text-sm">Se connecter</Link>
+            <Link href="/" className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-4 py-2 text-gray-700 hover:bg-gray-50 transition text-sm">Retour à l’accueil</Link>
+          </div>
+        </div>
+      )}
+      {(!isSupabaseConfigured || !!userId) && (
       <div className="mt-6 rounded-xl border border-black/10 bg-white p-6 shadow-sm">
       <form onSubmit={onSubmit} className="grid gap-4">
         <div>
@@ -394,6 +427,7 @@ export default function CreateListingPage() {
         </div>
       </form>
       </div>
+      )}
     </div>
   );
 }

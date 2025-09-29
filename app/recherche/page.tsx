@@ -401,8 +401,8 @@ function SearchPage() {
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={() => { setCat(""); setStep(3); }}
-              className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+              onClick={() => { setCat(""); }}
+              className={`inline-flex items-center justify-center rounded-md px-3 py-2 text-sm border ${cat===""?"bg-teal-600 text-white border-teal-600":"bg-white text-gray-700 border-black/10 hover:bg-gray-50"}`}
             >
               Toutes
             </button>
@@ -410,7 +410,7 @@ function SearchPage() {
               <button
                 key={c}
                 type="button"
-                onClick={() => { setCat(c); setStep(3); }}
+                onClick={() => { setCat(c); }}
                 className={`inline-flex items-center justify-center rounded-md px-3 py-2 text-sm border ${cat===c?"bg-teal-600 text-white border-teal-600":"bg-white text-gray-700 border-black/10 hover:bg-gray-50"}`}
               >
                 {c}
@@ -418,24 +418,9 @@ function SearchPage() {
             ))}
           </div>
         </div>
-        <div className="sm:col-span-6 flex items-end justify-between gap-3">
-          <div className="flex flex-wrap gap-2">
-            {step > 1 && (
-              <button type="button" onClick={() => setStep(step - 1)} className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-4 py-3 text-gray-700 hover:bg-gray-50 transition">
-                Précédent
-              </button>
-            )}
-            {/* Hide Next on step 2 to encourage choosing a category button */}
-            {step === 1 && (
-              <button type="button" onClick={() => setStep(step + 1)} disabled={step===1 && !hasLocation} className="inline-flex items-center justify-center rounded-md bg-teal-600 px-5 py-3 text-white shadow hover:bg-teal-700 transition disabled:opacity-60">
-                Suivant
-              </button>
-            )}
-            {step === 3 && (
-              <button type="submit" className="inline-flex items-center justify-center rounded-md bg-teal-600 px-5 py-3 text-white shadow hover:bg-teal-700 transition">
-                Appliquer
-              </button>
-            )}
+        {/* Navigation bar: Reset (left), Prev (center), Next (right) */}
+        <div className="sm:col-span-6 grid grid-cols-3 items-center gap-3 mt-2">
+          <div className="justify-self-start">
             <button
               type="button"
               onClick={() => {
@@ -455,6 +440,23 @@ function SearchPage() {
               Réinitialiser
             </button>
           </div>
+          <div className="justify-self-center">
+            {step > 1 && (
+              <button type="button" onClick={() => setStep(step - 1)} className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-4 py-3 text-gray-700 hover:bg-gray-50 transition">
+                Précédent
+              </button>
+            )}
+          </div>
+          <div className="justify-self-end">
+            <button
+              type="button"
+              onClick={() => setStep(Math.min(3, step + 1))}
+              disabled={(step===1 && !hasLocation) || step===3}
+              className="inline-flex items-center justify-center rounded-md bg-teal-600 px-5 py-3 text-white shadow hover:bg-teal-700 transition disabled:opacity-60"
+            >
+              Suivant
+            </button>
+          </div>
         </div>
       </form>
       </div>
@@ -472,20 +474,32 @@ function SearchPage() {
             <button type="button" onClick={() => setStep(2)} className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-2 py-1 text-gray-700 hover:bg-gray-50">Modifier catégorie</button>
           </div>
         </div>
-        {/* Barres filtres résultats */}
-        <div className="mt-3 flex flex-wrap items-center gap-3">
-          <div>
-            <label className="mr-2 text-sm text-gray-700">Tri</label>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as "recent" | "price_asc" | "price_desc")}
-              className="rounded-md border border-black/10 bg-white px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900"
-            >
-              <option value="recent">Plus récent</option>
-              <option value="price_asc">Prix croissant</option>
-              <option value="price_desc">Prix décroissant</option>
-            </select>
+        {/* Filtres résultats (Rayon, Plus récent, Avec photo) */}
+        <div className="mt-3 flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-gray-700">Rayon</label>
+            <input
+              type="number"
+              min={1}
+              max={100}
+              value={radius}
+              onChange={(e) => setRadius(parseInt(e.target.value || "10", 10))}
+              className="w-20 rounded-md border border-black/10 bg-white px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900"
+            />
+            <div className="flex items-center gap-2">
+              {[5,10,25,50].map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  onClick={() => setRadius(r)}
+                  className={`inline-flex items-center justify-center rounded-md px-2.5 py-1 text-xs border ${radius===r?"bg-teal-600 text-white border-teal-600":"bg-white text-gray-700 border-black/10 hover:bg-gray-50"}`}
+                >
+                  {r} km
+                </button>
+              ))}
+            </div>
           </div>
+          <div className="text-sm text-gray-700">Tri: Plus récent</div>
           <label className="inline-flex items-center gap-2 text-sm text-gray-700">
             <input
               type="checkbox"

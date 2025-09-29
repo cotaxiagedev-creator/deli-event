@@ -370,6 +370,18 @@ function SearchPage() {
             onChange={(e) => setRadius(parseInt(e.target.value || "10", 10))}
             className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
           />
+          <div className="mt-2 flex flex-wrap gap-2">
+            {[5,10,25,50].map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => setRadius(r)}
+                className={`inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm border ${radius===r?"bg-teal-600 text-white border-teal-600":"bg-white text-gray-700 border-black/10 hover:bg-gray-50"}`}
+              >
+                {r} km
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Étape 2: Catégorie (boutons) */}

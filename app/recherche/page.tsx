@@ -279,7 +279,6 @@ function SearchPage() {
       {/* Suggestions contextuelles par étape */}
       <RecentBlocks
         step={step}
-        onApplyCategory={(c) => setCat(c)}
         onApplyLocation={(name) => {
           setQuery(name);
           setSelectedPlace({ name, lat: 0, lon: 0 });
@@ -347,6 +346,7 @@ function SearchPage() {
                   key={`${s.lat}-${s.lon}`}
                   className="cursor-pointer px-3 py-2 text-sm text-gray-700 hover:bg-teal-50"
                   role="option"
+                  aria-selected="false"
                   onClick={() => handleSelectSuggestion(s)}
                 >
                   {s.display_name}
@@ -613,12 +613,10 @@ export default function Page() {
 
 function RecentBlocks({
   step,
-  onApplyCategory,
   onApplyLocation,
   onApplySearch,
 }: {
   step: number;
-  onApplyCategory: (c: string) => void;
   onApplyLocation: (name: string) => void;
   onApplySearch: (s: { q: string; cat?: string; date?: string; radius?: number }) => void;
 }) {

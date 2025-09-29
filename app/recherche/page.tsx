@@ -456,6 +456,7 @@ function SearchPage() {
         </div>
       </form>
       </div>
+      )}
 
       {step === 3 && (
       <section className="mt-10">

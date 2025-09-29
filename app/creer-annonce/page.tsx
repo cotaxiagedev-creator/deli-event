@@ -15,6 +15,48 @@ const categories = [
   "Extérieur",
 ];
 
+const pricePresetsByCat: Record<string, number[]> = {
+  Photobooth: [100, 150, 200],
+  Sonorisation: [50, 80, 120],
+  Lumière: [30, 60, 90],
+  Mobilier: [15, 25, 40],
+  Cuisine: [20, 35, 60],
+  Extérieur: [25, 50, 75],
+};
+
+const titleSuggestionsByCat: Record<string, string[]> = {
+  Photobooth: [
+    "Photobooth rétro bois",
+    "Photobooth selfie iPad",
+    "Photobooth avec impressions illimitées",
+  ],
+  Sonorisation: [
+    "Pack son 2 enceintes + micro",
+    "Enceinte sur batterie + micro",
+    "Table de mixage DJ + enceintes",
+  ],
+  Lumière: [
+    "Jeu de lumières LED",
+    "Projecteurs d'ambiance (uplights)",
+    "Pack disco: laser + stroboscope",
+  ],
+  Mobilier: [
+    "Table pliante + 6 chaises",
+    "Tonneau bar décoratif",
+    "Salon lounge extérieur",
+  ],
+  Cuisine: [
+    "Percolateur 10L",
+    "Plancha gaz 2 feux",
+    "Tirage à bière 2 becs",
+  ],
+  Extérieur: [
+    "Barnum 3x3m",
+    "Chauffage de terrasse",
+    "Guirlandes guinguette 10m",
+  ],
+};
+
 export default function CreateListingPage() {
   const { show } = useToast();
   const router = useRouter();
@@ -353,6 +395,20 @@ export default function CreateListingPage() {
             autoComplete="off"
             name="title"
           />
+          {cat && titleSuggestionsByCat[cat]?.length ? (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {titleSuggestionsByCat[cat].map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setTitle(s)}
+                  className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          ) : null}
         </div>
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
@@ -383,6 +439,20 @@ export default function CreateListingPage() {
               autoComplete="off"
               name="price"
             />
+            {cat && pricePresetsByCat[cat]?.length ? (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {pricePresetsByCat[cat].map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setPrice(String(p))}
+                    className={`inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm border ${Number(price)===p?"bg-teal-600 text-white border-teal-600":"bg-white text-gray-700 border-black/10 hover:bg-gray-50"}`}
+                  >
+                    {p} €
+                  </button>
+                ))}
+              </div>
+            ) : null}
           </div>
         </div>
         <div>
@@ -487,7 +557,7 @@ export default function CreateListingPage() {
               placeholder="https://…"
               className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
             />
-            <p className="mt-1 text-xs text-gray-500">Si aucun fichier n’est sélectionné, on utilisera cette URL.</p>
+            <p className="mt-1 text-xs text-gray-500">Si aucun fichier n’est sélectionné, on utilisera cette URL. Conseil: ajoutez un visuel clair pour améliorer la visibilité dans la recherche.</p>
           </div>
         </div>
         <div>

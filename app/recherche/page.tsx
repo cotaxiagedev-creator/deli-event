@@ -418,8 +418,8 @@ function SearchPage() {
             ))}
           </div>
         </div>
-        <div className="sm:col-span-5 flex items-end justify-between gap-3">
-          <div className="flex gap-2">
+        <div className="sm:col-span-6 flex items-end justify-between gap-3">
+          <div className="flex flex-wrap gap-2">
             {step > 1 && (
               <button type="button" onClick={() => setStep(step - 1)} className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-4 py-3 text-gray-700 hover:bg-gray-50 transition">
                 Précédent
@@ -436,25 +436,25 @@ function SearchPage() {
                 Appliquer
               </button>
             )}
+            <button
+              type="button"
+              onClick={() => {
+                setCat("");
+                setSelectedPlace(null);
+                setQuery("");
+                setSuggestions([]);
+                setDate("");
+                setRadius(10);
+                setSortBy("recent");
+                setWithPhoto(false);
+                setSubmittedMsg(null);
+                setStep(1);
+              }}
+              className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-4 py-3 text-gray-700 hover:bg-gray-50 transition"
+            >
+              Réinitialiser
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              setCat("");
-              setSelectedPlace(null);
-              setQuery("");
-              setSuggestions([]);
-              setDate("");
-              setRadius(10);
-              setSortBy("recent");
-              setWithPhoto(false);
-              setSubmittedMsg(null);
-              setStep(1);
-            }}
-            className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-4 py-3 text-gray-700 hover:bg-gray-50 transition"
-          >
-            Réinitialiser
-          </button>
         </div>
       </form>
       </div>
@@ -625,8 +625,8 @@ function RecentBlocks({
 
   return (
     <div className="mt-6 grid gap-4">
-      {/* Category suggestions (only step 3) */}
-      {step === 3 && (
+      {/* Category suggestions (only step 2) */}
+      {step === 2 && (
         <div>
           <p className="text-sm text-gray-600">Suggestions de catégories</p>
           <div className="mt-2 flex flex-wrap gap-2">

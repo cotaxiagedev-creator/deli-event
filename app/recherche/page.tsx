@@ -625,24 +625,6 @@ function RecentBlocks({
 
   return (
     <div className="mt-6 grid gap-4">
-      {/* Category suggestions (only step 2) */}
-      {step === 2 && (
-        <div>
-          <p className="text-sm text-gray-600">Suggestions de catégories</p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {categories.map((c) => (
-              <button
-                key={c}
-                onClick={() => onApplyCategory(c)}
-                className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
-              >
-                {c}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Recent locations (only step 1) */}
       {step === 1 && recentLocations.length > 0 && (
         <div>

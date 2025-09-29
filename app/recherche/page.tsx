@@ -44,6 +44,7 @@ function SearchPage() {
   const [loadingListings, setLoadingListings] = useState(true);
   const [submittedMsg, setSubmittedMsg] = useState<string | null>(null);
   const [step, setStep] = useState<number>(1);
+  const hasLocation = Boolean(selectedPlace?.name || query);
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -324,6 +325,9 @@ function SearchPage() {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Ville ou adresse"
               className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 pr-10 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
+              role="combobox"
+              aria-controls="loc-suggest"
+              aria-expanded={suggestions.length > 0}
             />
             {query && (
               <button
@@ -342,11 +346,12 @@ function SearchPage() {
           </div>
           {/* Suggestions dropdown */}
           {suggestions.length > 0 && (
-            <ul className="mt-1 max-h-56 overflow-auto rounded-md border border-black/10 bg-white shadow">
+            <ul id="loc-suggest" role="listbox" className="mt-1 max-h-56 overflow-auto rounded-md border border-black/10 bg-white shadow">
               {suggestions.map((s) => (
                 <li
                   key={`${s.lat}-${s.lon}`}
                   className="cursor-pointer px-3 py-2 text-sm text-gray-700 hover:bg-teal-50"
+                  role="option"
                   onClick={() => handleSelectSuggestion(s)}
                 >
                   {s.display_name}
@@ -359,6 +364,9 @@ function SearchPage() {
           )}
           {selectedPlace && (
             <p className="mt-1 text-xs text-gray-500">Lieu sélectionné: {selectedPlace.name}</p>
+          )}
+          {step === 1 && !hasLocation && (
+            <p className="mt-1 text-xs text-amber-700">Veuillez saisir un lieu ou choisir une suggestion avant de continuer.</p>
           )}
         </div>
         {/* Rayon en étape 1 */}
@@ -407,7 +415,7 @@ function SearchPage() {
               </button>
             )}
             {step < 3 && (
-              <button type="button" onClick={() => setStep(step + 1)} className="inline-flex items-center justify-center rounded-md bg-teal-600 px-5 py-3 text-white shadow hover:bg-teal-700 transition">
+              <button type="button" onClick={() => setStep(step + 1)} disabled={step===1 && !hasLocation} className="inline-flex items-center justify-center rounded-md bg-teal-600 px-5 py-3 text-white shadow hover:bg-teal-700 transition disabled:opacity-60">
                 Suivant
               </button>
             )}
@@ -441,6 +449,16 @@ function SearchPage() {
       {step === 3 && (
       <section className="mt-10">
         <h2 className="text-xl font-semibold text-gray-900">Résultats (démo)</h2>
+        {/* Résumé des critères */}
+        <div className="mt-3 rounded-md border border-black/10 bg-white p-3 text-sm text-gray-700">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded bg-teal-50 px-2 py-1 text-teal-700 border border-black/10">Lieu: {selectedPlace?.name || query || "-"}</span>
+            <span className="rounded bg-teal-50 px-2 py-1 text-teal-700 border border-black/10">Rayon: {radius} km</span>
+            <span className="rounded bg-teal-50 px-2 py-1 text-teal-700 border border-black/10">Catégorie: {cat || "Toutes"}</span>
+            <button type="button" onClick={() => setStep(1)} className="ml-2 inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-2 py-1 text-gray-700 hover:bg-gray-50">Modifier lieu/rayon</button>
+            <button type="button" onClick={() => setStep(2)} className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-2 py-1 text-gray-700 hover:bg-gray-50">Modifier catégorie</button>
+          </div>
+        </div>
         {/* Barres filtres résultats */}
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <div>

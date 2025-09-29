@@ -384,17 +384,30 @@ export default function CreateListingPage() {
       {(!isSupabaseConfigured || !!userId) && (
       <div className="mt-6 rounded-xl border border-black/10 bg-white p-6 shadow-sm">
       <form onSubmit={onSubmit} className="grid gap-4">
+        <div className="sm:col-span-6 -mb-2 text-sm text-gray-600">Informations</div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Titre *</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Ex: Photobooth rétro"
-            className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
-            autoComplete="off"
-            name="title"
-          />
+          <div className="relative">
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Ex: Photobooth rétro"
+              className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 pr-10 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
+              autoComplete="off"
+              name="title"
+            />
+            {title && (
+              <button
+                type="button"
+                aria-label="Effacer le titre"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-gray-500 hover:text-gray-700"
+                onClick={() => setTitle("")}
+              >
+                ✕
+              </button>
+            )}
+          </div>
           {cat && titleSuggestionsByCat[cat]?.length ? (
             <div className="mt-2 flex flex-wrap gap-2">
               {titleSuggestionsByCat[cat].map((s) => (
@@ -455,6 +468,7 @@ export default function CreateListingPage() {
             ) : null}
           </div>
         </div>
+        <div className="sm:col-span-6 -mb-2 text-sm text-gray-600">Contact</div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Téléphone (optionnel)</label>
           <input
@@ -467,6 +481,7 @@ export default function CreateListingPage() {
           <p className="mt-1 text-xs text-gray-500">Affiché sur la fiche si renseigné.</p>
         </div>
         <div>
+          <div className="sm:col-span-6 -mb-2 text-sm text-gray-600">Localisation</div>
           <label className="block text-sm font-medium text-gray-700">Localisation *</label>
           <div className="relative">
             <input
@@ -525,6 +540,7 @@ export default function CreateListingPage() {
           </div>
         </div>
         <div className="grid sm:grid-cols-2 gap-4">
+          <div className="sm:col-span-2 -mb-2 text-sm text-gray-600">Visuels</div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Image (fichier)</label>
             <input
@@ -550,17 +566,30 @@ export default function CreateListingPage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Image (URL alternative)</label>
-            <input
-              type="url"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://…"
-              className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
-            />
+            <div className="relative">
+              <input
+                type="url"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="https://…"
+                className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 pr-10 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
+              />
+              {imageUrl && (
+                <button
+                  type="button"
+                  aria-label="Effacer l'URL d'image"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-gray-500 hover:text-gray-700"
+                  onClick={() => setImageUrl("")}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
             <p className="mt-1 text-xs text-gray-500">Si aucun fichier n’est sélectionné, on utilisera cette URL. Conseil: ajoutez un visuel clair pour améliorer la visibilité dans la recherche.</p>
           </div>
         </div>
         <div>
+          <div className="sm:col-span-6 -mb-2 text-sm text-gray-600">Description</div>
           <label className="block text-sm font-medium text-gray-700">Description</label>
           <textarea
             value={desc}
@@ -571,13 +600,32 @@ export default function CreateListingPage() {
           />
         </div>
 
-        <div className="flex gap-3 pt-2">
-          <button type="submit" disabled={loading} className="inline-flex items-center justify-center rounded-md bg-teal-600 px-5 py-3 text-white shadow hover:bg-teal-700 transition disabled:opacity-60">
-            {loading ? "Publication…" : "Publier"}
-          </button>
-          <Link href="/" className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-5 py-3 text-gray-700 hover:bg-gray-50 transition">
-            Annuler
-          </Link>
+        {/* Action bar harmonisée: Reset (gauche), Retour (centre), Publier (droite) */}
+        <div className="grid grid-cols-3 items-center gap-3 pt-2">
+          <div className="justify-self-start">
+            <button
+              type="button"
+              onClick={() => {
+                try { if (typeof window !== 'undefined') localStorage.removeItem('draft_create_listing_v1'); } catch {}
+                setTitle(""); setCat(""); setPrice(""); setDesc(""); setLocation(""); setPhone(""); setImageUrl(""); setImageFile(null); setImagePreview(null); setLocLat(null); setLocLon(null);
+                setMessage(null); setError(null);
+                show('info', 'Formulaire réinitialisé');
+              }}
+              className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-5 py-3 text-gray-700 hover:bg-gray-50 transition"
+            >
+              Réinitialiser
+            </button>
+          </div>
+          <div className="justify-self-center">
+            <Link href="/" className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-5 py-3 text-gray-700 hover:bg-gray-50 transition">
+              Retour
+            </Link>
+          </div>
+          <div className="justify-self-end">
+            <button type="submit" disabled={loading} className="inline-flex items-center justify-center rounded-md bg-teal-600 px-5 py-3 text-white shadow hover:bg-teal-700 transition disabled:opacity-60">
+              {loading ? "Publication…" : "Publier"}
+            </button>
+          </div>
         </div>
       </form>
       </div>

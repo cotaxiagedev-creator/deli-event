@@ -35,6 +35,7 @@ function SearchPage() {
   const [cat, setCat] = useState("");
   const [radius, setRadius] = useState(10); // km
   const [sortBy, setSortBy] = useState<"recent" | "price_asc" | "price_desc">("recent");
+  const [withPhoto, setWithPhoto] = useState<boolean>(false);
   const [suggestions, setSuggestions] = useState<Array<{ display_name: string; lat: string; lon: string }>>([]);
   const [loadingSuggest, setLoadingSuggest] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState<{ name: string; lat: number; lon: number } | null>(null);
@@ -49,7 +50,7 @@ function SearchPage() {
     setSubmittedMsg(
       `Recherche appliquée — Lieu: ${selectedPlace?.name || query || "-"} • Rayon: ${radius} km • Date: ${date || "-"} • Catégorie: ${cat || "Toutes"}`
     );
-    setStep(4);
+    setStep(5);
     // Save recent search (keep max 5)
     try {
       const now = Date.now();
@@ -132,7 +133,7 @@ function SearchPage() {
       if (typeof window === "undefined") return;
       const raw = localStorage.getItem("search_wizard_step");
       const s = raw ? parseInt(raw, 10) : 1;
-      if (Number.isFinite(s) && s >= 1 && s <= 4) setStep(s);
+      if (Number.isFinite(s) && s >= 1 && s <= 5) setStep(s);
     } catch {}
   }, []);
   useEffect(() => {
@@ -283,7 +284,8 @@ function SearchPage() {
         <span className={`rounded-full px-3 py-1 border ${step===1?"bg-teal-600 text-white border-teal-600":"bg-white text-gray-700 border-black/10"}`}>1 • Lieu</span>
         <span className={`rounded-full px-3 py-1 border ${step===2?"bg-teal-600 text-white border-teal-600":"bg-white text-gray-700 border-black/10"}`}>2 • Date</span>
         <span className={`rounded-full px-3 py-1 border ${step===3?"bg-teal-600 text-white border-teal-600":"bg-white text-gray-700 border-black/10"}`}>3 • Catégorie</span>
-        <span className={`rounded-full px-3 py-1 border ${step===4?"bg-teal-600 text-white border-teal-600":"bg-white text-gray-700 border-black/10"}`}>4 • Résultats</span>
+        <span className={`rounded-full px-3 py-1 border ${step===4?"bg-teal-600 text-white border-teal-600":"bg-white text-gray-700 border-black/10"}`}>4 • Photo</span>
+        <span className={`rounded-full px-3 py-1 border ${step===5?"bg-teal-600 text-white border-teal-600":"bg-white text-gray-700 border-black/10"}`}>5 • Résultats</span>
       </div>
 
       {/* Suggestions contextuelles par étape */}
@@ -412,6 +414,24 @@ function SearchPage() {
             <option value="price_desc">Prix décroissant</option>
           </select>
         </div>
+        {step === 4 && (
+          <div className="sm:col-span-6 -mb-2 text-sm text-gray-600">Étape 4 • Photo</div>
+        )}
+        <div className={`sm:col-span-3 ${step===4?"":"hidden"}`}>
+          <label className="block text-sm font-medium text-gray-700">Options d’illustration</label>
+          <div className="mt-2 rounded-md border border-black/10 bg-white p-3">
+            <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                checked={withPhoto}
+                onChange={(e) => setWithPhoto(e.target.checked)}
+                className="h-4 w-4 rounded border-black/20 text-teal-600 focus:ring-teal-500"
+              />
+              Afficher seulement les annonces avec photo
+            </label>
+            <p className="mt-1 text-xs text-gray-500">Pour rester cohérent avec la création, seuls les visuels principaux sont pris en compte.</p>
+          </div>
+        </div>
         <div className="sm:col-span-5 flex items-end justify-between gap-3">
           <div className="flex gap-2">
             {step > 1 && (
@@ -419,12 +439,12 @@ function SearchPage() {
                 Précédent
               </button>
             )}
-            {step < 4 && (
+            {step < 5 && (
               <button type="button" onClick={() => setStep(step + 1)} className="inline-flex items-center justify-center rounded-md bg-teal-600 px-5 py-3 text-white shadow hover:bg-teal-700 transition">
                 Suivant
               </button>
             )}
-            {step === 4 && (
+            {step === 5 && (
               <button type="submit" className="inline-flex items-center justify-center rounded-md bg-teal-600 px-5 py-3 text-white shadow hover:bg-teal-700 transition">
                 Appliquer
               </button>
@@ -440,6 +460,7 @@ function SearchPage() {
               setDate("");
               setRadius(10);
               setSortBy("recent");
+              setWithPhoto(false);
               setSubmittedMsg(null);
               setStep(1);
             }}
@@ -450,7 +471,7 @@ function SearchPage() {
         </div>
       </form>
 
-      {step === 4 && (
+      {step === 5 && (
       <section className="mt-10">
         <h2 className="text-xl font-semibold text-gray-900">Résultats (démo)</h2>
         <p className="mt-2 text-gray-600">{filtered.length} annonce(s) trouvée(s).</p>

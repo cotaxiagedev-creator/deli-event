@@ -31,7 +31,7 @@ type ListingWithDistance = Listing & { _distance: number };
 function SearchPage() {
   const searchParams = useSearchParams();
   const [query, setQuery] = useState("");
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState(""); // conservé pour futur usage, non affiché
   const [cat, setCat] = useState("");
   const [radius, setRadius] = useState(10); // km
   const [sortBy, setSortBy] = useState<"recent" | "price_asc" | "price_desc">("recent");
@@ -48,7 +48,7 @@ function SearchPage() {
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmittedMsg(
-      `Recherche appliquée — Lieu: ${selectedPlace?.name || query || "-"} • Rayon: ${radius} km • Date: ${date || "-"} • Catégorie: ${cat || "Toutes"}`
+      `Recherche appliquée — Lieu: ${selectedPlace?.name || query || "-"} • Rayon: ${radius} km • Catégorie: ${cat || "Toutes"}`
     );
     setStep(3);
     // Save recent search (keep max 5)
@@ -280,14 +280,13 @@ function SearchPage() {
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
       <h1 className="text-3xl font-bold text-gray-900">Recherche</h1>
       <p className="mt-2 text-gray-600">
-        Recherchez par lieu et date. La V1 utilise des données de démonstration (sans
-        paiement, sans authentification).
+        Recherchez par lieu. La V1 utilise des données de démonstration (sans paiement, sans authentification).
       </p>
 
       {/* Wizard header */}
       <div className="mt-4 flex flex-wrap items-center gap-2 text-sm">
-        <span className={`rounded-full px-3 py-1 border ${step===1?"bg-teal-600 text-white border-teal-600":"bg-white text-gray-700 border-black/10"}`}>1 • Lieu & filtres</span>
-        <span className={`rounded-full px-3 py-1 border ${step===2?"bg-teal-600 text-white border-teal-600":"bg-white text-gray-700 border-black/10"}`}>2 • Date</span>
+        <span className={`rounded-full px-3 py-1 border ${step===1?"bg-teal-600 text-white border-teal-600":"bg-white text-gray-700 border-black/10"}`}>1 • Lieu</span>
+        <span className={`rounded-full px-3 py-1 border ${step===2?"bg-teal-600 text-white border-teal-600":"bg-white text-gray-700 border-black/10"}`}>2 • Catégorie</span>
         <span className={`rounded-full px-3 py-1 border ${step===3?"bg-teal-600 text-white border-teal-600":"bg-white text-gray-700 border-black/10"}`}>3 • Résultats</span>
       </div>
 
@@ -315,9 +314,7 @@ function SearchPage() {
       )}
 
       <form onSubmit={onSubmit} className="mt-8 grid gap-4 sm:grid-cols-6 items-start">
-        {step === 1 && (
-          <div className="sm:col-span-6 -mb-2 text-sm text-gray-600">Étape 1 • Choisissez un lieu et appliquez vos filtres (catégorie, rayon, tri, photo)</div>
-        )}
+        {step === 1 && (<div className="sm:col-span-6 -mb-2 text-sm text-gray-600">Étape 1 • Choisissez un lieu et réglez le rayon</div>)}
         <div className={`sm:col-span-3 ${step===1?"":"hidden"}`}>
           <label className="block text-sm font-medium text-gray-700">Lieu</label>
           <div className="relative">
@@ -364,36 +361,7 @@ function SearchPage() {
             <p className="mt-1 text-xs text-gray-500">Lieu sélectionné: {selectedPlace.name}</p>
           )}
         </div>
-        {step === 2 && (
-          <div className="sm:col-span-6 -mb-2 text-sm text-gray-600">Étape 2 • Date (facultatif)</div>
-        )}
-        <div className={`sm:col-span-1 ${step===2?"":"hidden"}`}>
-          <label className="block text-sm font-medium text-gray-700">Date</label>
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
-          />
-        </div>
-        {step === 1 && (
-          <div className="sm:col-span-6 -mb-2 text-sm text-gray-600">Filtres</div>
-        )}
-        <div className={`sm:col-span-1 ${step===1?"":"hidden"}`}>
-          <label className="block text-sm font-medium text-gray-700">Catégorie</label>
-          <select
-            value={cat}
-            onChange={(e) => setCat(e.target.value)}
-            className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900"
-          >
-            <option value="">Toutes</option>
-            {categories.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </div>
+        {/* Rayon en étape 1 */}
         <div className={`sm:col-span-1 ${step===1?"":"hidden"}`}>
           <label className="block text-sm font-medium text-gray-700">Rayon (km)</label>
           <input
@@ -405,30 +373,30 @@ function SearchPage() {
             className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
           />
         </div>
-        <div className={`sm:col-span-1 ${step===1?"":"hidden"}`}>
-          <label className="block text-sm font-medium text-gray-700">Tri</label>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as "recent" | "price_asc" | "price_desc")}
-            className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900"
-          >
-            <option value="recent">Plus récent</option>
-            <option value="price_asc">Prix croissant</option>
-            <option value="price_desc">Prix décroissant</option>
-          </select>
-        </div>
-        <div className={`sm:col-span-2 ${step===1?"":"hidden"}`}>
-          <label className="block text-sm font-medium text-gray-700">Affichage</label>
-          <div className="mt-2 rounded-md border border-black/10 bg-white p-3">
-            <label className="inline-flex items-center gap-2 text-sm text-gray-700">
-              <input
-                type="checkbox"
-                checked={withPhoto}
-                onChange={(e) => setWithPhoto(e.target.checked)}
-                className="h-4 w-4 rounded border-black/20 text-teal-600 focus:ring-teal-500"
-              />
-              Afficher seulement les annonces avec photo
-            </label>
+
+        {/* Étape 2: Catégorie (boutons) */}
+        {step === 2 && (
+          <div className="sm:col-span-6 -mb-2 text-sm text-gray-600">Étape 2 • Sélectionnez une catégorie</div>
+        )}
+        <div className={`sm:col-span-6 ${step===2?"":"hidden"}`}>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => { setCat(""); setStep(3); }}
+              className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+            >
+              Toutes
+            </button>
+            {categories.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => { setCat(c); setStep(3); }}
+                className={`inline-flex items-center justify-center rounded-md px-3 py-2 text-sm border ${cat===c?"bg-teal-600 text-white border-teal-600":"bg-white text-gray-700 border-black/10 hover:bg-gray-50"}`}
+              >
+                {c}
+              </button>
+            ))}
           </div>
         </div>
         <div className="sm:col-span-5 flex items-end justify-between gap-3">
@@ -473,7 +441,31 @@ function SearchPage() {
       {step === 3 && (
       <section className="mt-10">
         <h2 className="text-xl font-semibold text-gray-900">Résultats (démo)</h2>
-        <p className="mt-2 text-gray-600">{filtered.length} annonce(s) trouvée(s).</p>
+        {/* Barres filtres résultats */}
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <div>
+            <label className="mr-2 text-sm text-gray-700">Tri</label>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as "recent" | "price_asc" | "price_desc")}
+              className="rounded-md border border-black/10 bg-white px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900"
+            >
+              <option value="recent">Plus récent</option>
+              <option value="price_asc">Prix croissant</option>
+              <option value="price_desc">Prix décroissant</option>
+            </select>
+          </div>
+          <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              checked={withPhoto}
+              onChange={(e) => setWithPhoto(e.target.checked)}
+              className="h-4 w-4 rounded border-black/20 text-teal-600 focus:ring-teal-500"
+            />
+            Avec photo
+          </label>
+          <span className="text-sm text-gray-500">{filtered.length} annonce(s)</span>
+        </div>
         <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {loadingListings && (
             <>

@@ -50,7 +50,7 @@ function SearchPage() {
     setSubmittedMsg(
       `Recherche appliquée — Lieu: ${selectedPlace?.name || query || "-"} • Rayon: ${radius} km • Date: ${date || "-"} • Catégorie: ${cat || "Toutes"}`
     );
-    setStep(5);
+    setStep(3);
     // Save recent search (keep max 5)
     try {
       const now = Date.now();
@@ -133,7 +133,7 @@ function SearchPage() {
       if (typeof window === "undefined") return;
       const raw = localStorage.getItem("search_wizard_step");
       const s = raw ? parseInt(raw, 10) : 1;
-      if (Number.isFinite(s) && s >= 1 && s <= 5) setStep(s);
+      if (Number.isFinite(s) && s >= 1 && s <= 3) setStep(s);
     } catch {}
   }, []);
   useEffect(() => {
@@ -255,6 +255,11 @@ function SearchPage() {
       base = [...inRadius, ...withoutCoords];
     }
 
+    // Only listings with an image when requested
+    if (withPhoto) {
+      base = base.filter((l) => Boolean((l as Listing).image));
+    }
+
     // Sorting
     const sorted = [...base];
     if (sortBy === "recent") {
@@ -269,7 +274,7 @@ function SearchPage() {
       sorted.sort((a, b) => (b.pricePerDay || 0) - (a.pricePerDay || 0));
     }
     return sorted;
-  }, [listings, cat, selectedPlace, radius, sortBy]);
+  }, [listings, cat, selectedPlace, radius, sortBy, withPhoto]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
@@ -281,11 +286,9 @@ function SearchPage() {
 
       {/* Wizard header */}
       <div className="mt-4 flex flex-wrap items-center gap-2 text-sm">
-        <span className={`rounded-full px-3 py-1 border ${step===1?"bg-teal-600 text-white border-teal-600":"bg-white text-gray-700 border-black/10"}`}>1 • Lieu</span>
+        <span className={`rounded-full px-3 py-1 border ${step===1?"bg-teal-600 text-white border-teal-600":"bg-white text-gray-700 border-black/10"}`}>1 • Lieu & filtres</span>
         <span className={`rounded-full px-3 py-1 border ${step===2?"bg-teal-600 text-white border-teal-600":"bg-white text-gray-700 border-black/10"}`}>2 • Date</span>
-        <span className={`rounded-full px-3 py-1 border ${step===3?"bg-teal-600 text-white border-teal-600":"bg-white text-gray-700 border-black/10"}`}>3 • Catégorie</span>
-        <span className={`rounded-full px-3 py-1 border ${step===4?"bg-teal-600 text-white border-teal-600":"bg-white text-gray-700 border-black/10"}`}>4 • Photo</span>
-        <span className={`rounded-full px-3 py-1 border ${step===5?"bg-teal-600 text-white border-teal-600":"bg-white text-gray-700 border-black/10"}`}>5 • Résultats</span>
+        <span className={`rounded-full px-3 py-1 border ${step===3?"bg-teal-600 text-white border-teal-600":"bg-white text-gray-700 border-black/10"}`}>3 • Résultats</span>
       </div>
 
       {/* Suggestions contextuelles par étape */}
@@ -313,7 +316,7 @@ function SearchPage() {
 
       <form onSubmit={onSubmit} className="mt-8 grid gap-4 sm:grid-cols-6 items-start">
         {step === 1 && (
-          <div className="sm:col-span-6 -mb-2 text-sm text-gray-600">Étape 1 • Choisissez un lieu (vous pouvez aussi taper une adresse)</div>
+          <div className="sm:col-span-6 -mb-2 text-sm text-gray-600">Étape 1 • Choisissez un lieu et appliquez vos filtres (catégorie, rayon, tri, photo)</div>
         )}
         <div className={`sm:col-span-3 ${step===1?"":"hidden"}`}>
           <label className="block text-sm font-medium text-gray-700">Lieu</label>
@@ -373,10 +376,10 @@ function SearchPage() {
             className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
           />
         </div>
-        {step === 3 && (
-          <div className="sm:col-span-6 -mb-2 text-sm text-gray-600">Étape 3 • Catégorie, rayon et tri</div>
+        {step === 1 && (
+          <div className="sm:col-span-6 -mb-2 text-sm text-gray-600">Filtres</div>
         )}
-        <div className={`sm:col-span-1 ${step===3?"":"hidden"}`}>
+        <div className={`sm:col-span-1 ${step===1?"":"hidden"}`}>
           <label className="block text-sm font-medium text-gray-700">Catégorie</label>
           <select
             value={cat}
@@ -391,7 +394,7 @@ function SearchPage() {
             ))}
           </select>
         </div>
-        <div className={`sm:col-span-1 ${step===3?"":"hidden"}`}>
+        <div className={`sm:col-span-1 ${step===1?"":"hidden"}`}>
           <label className="block text-sm font-medium text-gray-700">Rayon (km)</label>
           <input
             type="number"
@@ -402,7 +405,7 @@ function SearchPage() {
             className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
           />
         </div>
-        <div className={`sm:col-span-1 ${step===3?"":"hidden"}`}>
+        <div className={`sm:col-span-1 ${step===1?"":"hidden"}`}>
           <label className="block text-sm font-medium text-gray-700">Tri</label>
           <select
             value={sortBy}
@@ -414,11 +417,8 @@ function SearchPage() {
             <option value="price_desc">Prix décroissant</option>
           </select>
         </div>
-        {step === 4 && (
-          <div className="sm:col-span-6 -mb-2 text-sm text-gray-600">Étape 4 • Photo</div>
-        )}
-        <div className={`sm:col-span-3 ${step===4?"":"hidden"}`}>
-          <label className="block text-sm font-medium text-gray-700">Options d’illustration</label>
+        <div className={`sm:col-span-2 ${step===1?"":"hidden"}`}>
+          <label className="block text-sm font-medium text-gray-700">Affichage</label>
           <div className="mt-2 rounded-md border border-black/10 bg-white p-3">
             <label className="inline-flex items-center gap-2 text-sm text-gray-700">
               <input
@@ -429,7 +429,6 @@ function SearchPage() {
               />
               Afficher seulement les annonces avec photo
             </label>
-            <p className="mt-1 text-xs text-gray-500">Pour rester cohérent avec la création, seuls les visuels principaux sont pris en compte.</p>
           </div>
         </div>
         <div className="sm:col-span-5 flex items-end justify-between gap-3">
@@ -439,12 +438,12 @@ function SearchPage() {
                 Précédent
               </button>
             )}
-            {step < 5 && (
+            {step < 3 && (
               <button type="button" onClick={() => setStep(step + 1)} className="inline-flex items-center justify-center rounded-md bg-teal-600 px-5 py-3 text-white shadow hover:bg-teal-700 transition">
                 Suivant
               </button>
             )}
-            {step === 5 && (
+            {step === 3 && (
               <button type="submit" className="inline-flex items-center justify-center rounded-md bg-teal-600 px-5 py-3 text-white shadow hover:bg-teal-700 transition">
                 Appliquer
               </button>
@@ -471,7 +470,7 @@ function SearchPage() {
         </div>
       </form>
 
-      {step === 5 && (
+      {step === 3 && (
       <section className="mt-10">
         <h2 className="text-xl font-semibold text-gray-900">Résultats (démo)</h2>
         <p className="mt-2 text-gray-600">{filtered.length} annonce(s) trouvée(s).</p>

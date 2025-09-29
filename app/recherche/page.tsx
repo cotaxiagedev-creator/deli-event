@@ -128,18 +128,8 @@ function SearchPage() {
     fetchSuggestions(query);
   }, [query, fetchSuggestions]);
 
-  // Load & persist wizard step
+  // Clear UI suggestions when switching steps to avoid visual overlap
   useEffect(() => {
-    try {
-      if (typeof window === "undefined") return;
-      const raw = localStorage.getItem("search_wizard_step");
-      const s = raw ? parseInt(raw, 10) : 1;
-      if (Number.isFinite(s) && s >= 1 && s <= 3) setStep(s);
-    } catch {}
-  }, []);
-  useEffect(() => {
-    try { if (typeof window !== "undefined") localStorage.setItem("search_wizard_step", String(step)); } catch {}
-    // Clear UI suggestions when switching steps to avoid visual overlap
     setSuggestions([]);
   }, [step]);
 

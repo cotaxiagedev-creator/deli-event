@@ -304,7 +304,16 @@ function SearchPage() {
         </div>
       )}
 
-      <form onSubmit={onSubmit} className="mt-8 grid gap-4 sm:grid-cols-6 items-start">
+      {/* Wizard container (harmonized card) */}
+      <div className="mt-6 rounded-xl border border-black/10 bg-white p-6 shadow-sm">
+      {/* Linear progress */}
+      <div className="h-2 w-full rounded bg-gray-100 overflow-hidden">
+        <div
+          className="h-2 bg-teal-600 transition-all"
+          style={{ width: `${(step/3)*100}%` }}
+        />
+      </div>
+      <form onSubmit={onSubmit} className="mt-6 grid gap-4 sm:grid-cols-6 items-start">
         {step === 1 && (<div className="sm:col-span-6 -mb-2 text-sm text-gray-600">Étape 1 • Choisissez un lieu et réglez le rayon</div>)}
         <div className={`sm:col-span-3 ${step===1?"":"hidden"}`}>
           <label className="block text-sm font-medium text-gray-700">Lieu</label>
@@ -416,7 +425,8 @@ function SearchPage() {
                 Précédent
               </button>
             )}
-            {step < 3 && (
+            {/* Hide Next on step 2 to encourage choosing a category button */}
+            {step === 1 && (
               <button type="button" onClick={() => setStep(step + 1)} disabled={step===1 && !hasLocation} className="inline-flex items-center justify-center rounded-md bg-teal-600 px-5 py-3 text-white shadow hover:bg-teal-700 transition disabled:opacity-60">
                 Suivant
               </button>
@@ -447,6 +457,7 @@ function SearchPage() {
           </button>
         </div>
       </form>
+      </div>
 
       {step === 3 && (
       <section className="mt-10">

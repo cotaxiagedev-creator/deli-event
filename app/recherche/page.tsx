@@ -274,12 +274,7 @@ function SearchPage() {
         Recherchez par lieu. La V1 utilise des données de démonstration (sans paiement, sans authentification).
       </p>
 
-      {/* Wizard header */}
-      <div className="mt-4 flex flex-wrap items-center gap-2 text-sm">
-        <span className={`rounded-full px-3 py-1 border ${step===1?"bg-teal-600 text-white border-teal-600":"bg-white text-gray-700 border-black/10"}`}>1 • Lieu</span>
-        <span className={`rounded-full px-3 py-1 border ${step===2?"bg-teal-600 text-white border-teal-600":"bg-white text-gray-700 border-black/10"}`}>2 • Catégorie</span>
-        <span className={`rounded-full px-3 py-1 border ${step===3?"bg-teal-600 text-white border-teal-600":"bg-white text-gray-700 border-black/10"}`}>3 • Résultats</span>
-      </div>
+      {/* Single linear progress used as step indicator */}
 
       {/* Suggestions contextuelles par étape */}
       <RecentBlocks
@@ -304,7 +299,8 @@ function SearchPage() {
         </div>
       )}
 
-      {/* Wizard container (harmonized card) */}
+      {/* Wizard container (steps 1 and 2 only) */}
+      {step !== 3 && (
       <div className="mt-6 rounded-xl border border-black/10 bg-white p-6 shadow-sm">
       {/* Linear progress */}
       <div className="h-2 w-full rounded bg-gray-100 overflow-hidden">

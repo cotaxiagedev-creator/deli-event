@@ -137,6 +137,8 @@ function SearchPage() {
   }, []);
   useEffect(() => {
     try { if (typeof window !== "undefined") localStorage.setItem("search_wizard_step", String(step)); } catch {}
+    // Clear UI suggestions when switching steps to avoid visual overlap
+    setSuggestions([]);
   }, [step]);
 
   const handleSelectSuggestion = (s: { display_name: string; lat: string; lon: string }) => {
@@ -284,8 +286,9 @@ function SearchPage() {
         <span className={`rounded-full px-3 py-1 border ${step===4?"bg-teal-600 text-white border-teal-600":"bg-white text-gray-700 border-black/10"}`}>4 • Résultats</span>
       </div>
 
-      {/* Quick suggestions: categories + recent locations + recent searches */}
+      {/* Suggestions contextuelles par étape */}
       <RecentBlocks
+        step={step}
         onApplyCategory={(c) => setCat(c)}
         onApplyLocation={(name) => {
           setQuery(name);
@@ -307,6 +310,9 @@ function SearchPage() {
       )}
 
       <form onSubmit={onSubmit} className="mt-8 grid gap-4 sm:grid-cols-6 items-start">
+        {step === 1 && (
+          <div className="sm:col-span-6 -mb-2 text-sm text-gray-600">Étape 1 • Choisissez un lieu (vous pouvez aussi taper une adresse)</div>
+        )}
         <div className={`sm:col-span-3 ${step===1?"":"hidden"}`}>
           <label className="block text-sm font-medium text-gray-700">Lieu</label>
           <div className="relative">
@@ -353,6 +359,9 @@ function SearchPage() {
             <p className="mt-1 text-xs text-gray-500">Lieu sélectionné: {selectedPlace.name}</p>
           )}
         </div>
+        {step === 2 && (
+          <div className="sm:col-span-6 -mb-2 text-sm text-gray-600">Étape 2 • Date (facultatif)</div>
+        )}
         <div className={`sm:col-span-1 ${step===2?"":"hidden"}`}>
           <label className="block text-sm font-medium text-gray-700">Date</label>
           <input
@@ -362,6 +371,9 @@ function SearchPage() {
             className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
           />
         </div>
+        {step === 3 && (
+          <div className="sm:col-span-6 -mb-2 text-sm text-gray-600">Étape 3 • Catégorie, rayon et tri</div>
+        )}
         <div className={`sm:col-span-1 ${step===3?"":"hidden"}`}>
           <label className="block text-sm font-medium text-gray-700">Catégorie</label>
           <select
@@ -546,10 +558,12 @@ export default function Page() {
 }
 
 function RecentBlocks({
+  step,
   onApplyCategory,
   onApplyLocation,
   onApplySearch,
 }: {
+  step: number;
   onApplyCategory: (c: string) => void;
   onApplyLocation: (name: string) => void;
   onApplySearch: (s: { q: string; cat?: string; date?: string; radius?: number }) => void;
@@ -568,24 +582,26 @@ function RecentBlocks({
 
   return (
     <div className="mt-6 grid gap-4">
-      {/* Category suggestions */}
-      <div>
-        <p className="text-sm text-gray-600">Suggestions de catégories</p>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {categories.map((c) => (
-            <button
-              key={c}
-              onClick={() => onApplyCategory(c)}
-              className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
-            >
-              {c}
-            </button>
-          ))}
+      {/* Category suggestions (only step 3) */}
+      {step === 3 && (
+        <div>
+          <p className="text-sm text-gray-600">Suggestions de catégories</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {categories.map((c) => (
+              <button
+                key={c}
+                onClick={() => onApplyCategory(c)}
+                className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+              >
+                {c}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Recent locations */}
-      {recentLocations.length > 0 && (
+      {/* Recent locations (only step 1) */}
+      {step === 1 && recentLocations.length > 0 && (
         <div>
           <p className="text-sm text-gray-600">Lieux récents</p>
           <div className="mt-2 flex flex-wrap gap-2">
@@ -602,8 +618,8 @@ function RecentBlocks({
         </div>
       )}
 
-      {/* Recent searches */}
-      {recentSearches.length > 0 && (
+      {/* Recent searches (only step 1) */}
+      {step === 1 && recentSearches.length > 0 && (
         <div>
           <div className="flex items-center justify-between">
             <p className="text-sm text-gray-600">Recherches récentes</p>

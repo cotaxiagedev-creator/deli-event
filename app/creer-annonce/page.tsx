@@ -399,7 +399,7 @@ export default function CreateListingPage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Ex: Photobooth rétro"
-              className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 pr-10 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
+              className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 pr-10 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400 min-h-[44px]"
               autoComplete="off"
               name="title"
               aria-invalid={attemptedSubmit && !title ? true : undefined}
@@ -612,7 +612,7 @@ export default function CreateListingPage() {
                 value={imageUrl}
                 onChange={(e) => setImageUrl(e.target.value)}
                 placeholder="https://…"
-                className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 pr-10 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
+                className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 pr-10 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400 min-h-[44px]"
               />
               {imageUrl && (
                 <button

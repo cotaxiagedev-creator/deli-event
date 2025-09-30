@@ -322,7 +322,7 @@ export default function CreateListingPage() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-10">
+    <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-10">
       <h1 className="text-3xl font-bold text-gray-900">Déposer une annonce</h1>
       <p className="mt-2 text-gray-600">Version 1 (MVP): informations essentielles, sans paiement et sans authentification.</p>
 
@@ -391,7 +391,7 @@ export default function CreateListingPage() {
       <div className="mt-6 rounded-xl border border-black/10 bg-white p-4 sm:p-6 shadow-sm">
       <form onSubmit={onSubmit} className="grid gap-4">
         <div className="hidden md:block md:col-span-6 -mb-2 text-sm text-gray-600">Informations</div>
-        <div>
+        <div className="md:col-span-6">
           <label className="block text-sm font-medium text-gray-700">Titre *</label>
           <div className="relative min-w-0">
             <input
@@ -430,7 +430,7 @@ export default function CreateListingPage() {
             </div>
           ) : null}
         </div>
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-2 md:items-start md:gap-6 gap-4 md:col-span-6">
           <div>
             <label className="block text-sm font-medium text-gray-700">Catégorie *</label>
             <select
@@ -579,7 +579,7 @@ export default function CreateListingPage() {
             )}
           </div>
         </div>
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-2 md:items-start md:gap-6 gap-4">
           <div className="hidden md:block md:col-span-2 -mb-2 text-sm text-gray-600">Visuels</div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Image (fichier)</label>
@@ -602,7 +602,7 @@ export default function CreateListingPage() {
               // eslint-disable-next-line @next/next/no-img-element
               <img src={imagePreview} alt="Prévisualisation" className="mt-2 h-32 w-full object-cover rounded-md" />
             )}
-            <p className="mt-1 text-xs text-gray-500">Le fichier sera envoyé dans le bucket Supabase public `listings`.</p>
+            <p className="mt-1 text-xs text-gray-500 md:max-h-12 md:overflow-hidden md:leading-snug">Le fichier sera envoyé dans le bucket Supabase public `listings`.</p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Image (URL alternative)</label>
@@ -625,7 +625,7 @@ export default function CreateListingPage() {
                 </button>
               )}
             </div>
-            <p className="mt-1 text-xs text-gray-500">Si aucun fichier n’est sélectionné, on utilisera cette URL. Conseil: ajoutez un visuel clair pour améliorer la visibilité dans la recherche.</p>
+            <p className="mt-1 text-xs text-gray-500 md:max-h-12 md:overflow-hidden md:leading-snug">Si aucun fichier n’est sélectionné, on utilisera cette URL. Conseil: ajoutez un visuel clair pour améliorer la visibilité dans la recherche.</p>
           </div>
         </div>
         <div>

@@ -390,7 +390,7 @@ export default function CreateListingPage() {
       {(!isSupabaseConfigured || !!userId) && (
       <div className="mt-6 rounded-xl border border-black/10 bg-white p-4 sm:p-6 shadow-sm">
       <form onSubmit={onSubmit} className="grid gap-4">
-        <div className="sm:col-span-6 -mb-2 text-sm text-gray-600">Informations</div>
+        <div className="hidden md:block md:col-span-6 -mb-2 text-sm text-gray-600">Informations</div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Titre *</label>
           <div className="relative min-w-0">
@@ -430,7 +430,7 @@ export default function CreateListingPage() {
             </div>
           ) : null}
         </div>
-        <div className="grid sm:grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Catégorie *</label>
             <select
@@ -480,7 +480,7 @@ export default function CreateListingPage() {
             ) : null}
           </div>
         </div>
-        <div className="sm:col-span-6 -mb-2 text-sm text-gray-600">Contact</div>
+        <div className="hidden md:block md:col-span-6 -mb-2 text-sm text-gray-600">Contact</div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Téléphone (optionnel)</label>
           <input
@@ -493,7 +493,7 @@ export default function CreateListingPage() {
           <p className="mt-1 text-xs text-gray-500">Affiché sur la fiche si renseigné.</p>
         </div>
         <div>
-          <div className="sm:col-span-6 -mb-2 text-sm text-gray-600">Localisation</div>
+          <div className="hidden md:block md:col-span-6 -mb-2 text-sm text-gray-600">Localisation</div>
           <label className="block text-sm font-medium text-gray-700">Localisation *</label>
           <div className="relative">
             <input
@@ -579,8 +579,8 @@ export default function CreateListingPage() {
             )}
           </div>
         </div>
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div className="sm:col-span-2 -mb-2 text-sm text-gray-600">Visuels</div>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div className="hidden md:block md:col-span-2 -mb-2 text-sm text-gray-600">Visuels</div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Image (fichier)</label>
             <input
@@ -629,7 +629,7 @@ export default function CreateListingPage() {
           </div>
         </div>
         <div>
-          <div className="sm:col-span-6 -mb-2 text-sm text-gray-600">Description</div>
+          <div className="hidden md:block md:col-span-6 -mb-2 text-sm text-gray-600">Description</div>
           <label className="block text-sm font-medium text-gray-700">Description</label>
           <textarea
             value={desc}

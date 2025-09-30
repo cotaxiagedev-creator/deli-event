@@ -388,12 +388,12 @@ export default function CreateListingPage() {
         </div>
       )}
       {(!isSupabaseConfigured || !!userId) && (
-      <div className="mt-6 rounded-xl border border-black/10 bg-white p-6 shadow-sm">
+      <div className="mt-6 rounded-xl border border-black/10 bg-white p-4 sm:p-6 shadow-sm">
       <form onSubmit={onSubmit} className="grid gap-4">
         <div className="sm:col-span-6 -mb-2 text-sm text-gray-600">Informations</div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Titre *</label>
-          <div className="relative">
+          <div className="relative min-w-0">
             <input
               type="text"
               value={title}
@@ -554,14 +554,14 @@ export default function CreateListingPage() {
             {suggestions.length > 0 && (
               <ul
                 id="loc-suggest"
-                className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md border border-black/10 bg-white shadow"
+                className="absolute z-30 mt-1 max-h-60 w-full overflow-auto rounded-md border border-black/10 bg-white shadow"
                 role="listbox"
               >
                 {suggestions.map((s, idx) => (
                   <li
                     key={`${s.display_name}-${s.lat}-${s.lon}`}
                     id={`cr-opt-${idx}`}
-                    className={`cursor-pointer px-3 py-2 text-sm ${activeSuggestIndex===idx? 'bg-teal-50 text-teal-900':'text-gray-700 hover:bg-teal-50'}`}
+                    className={`cursor-pointer px-3 py-2 text-sm break-words ${activeSuggestIndex===idx? 'bg-teal-50 text-teal-900':'text-gray-700 hover:bg-teal-50'}`}
                     role="option"
                     aria-selected={activeSuggestIndex===idx}
                     onMouseEnter={() => setActiveSuggestIndex(idx)}
@@ -641,7 +641,7 @@ export default function CreateListingPage() {
         </div>
 
         {/* Action bar harmonisée: Reset (gauche), Retour (centre), Publier (droite) */}
-        <div className="grid grid-cols-3 items-center gap-3 pt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-3 items-center gap-2 sm:gap-3 pt-3 sm:pt-2">
           <div className="justify-self-start">
             <button
               type="button"
@@ -651,13 +651,13 @@ export default function CreateListingPage() {
                 setMessage(null); setError(null);
                 show('info', 'Formulaire réinitialisé');
               }}
-              className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-5 py-3 text-gray-700 hover:bg-gray-50 transition"
+              className="inline-flex w-full sm:w-auto items-center justify-center rounded-md border border-black/10 bg-white px-5 py-3 text-gray-700 hover:bg-gray-50 transition"
             >
               Réinitialiser
             </button>
           </div>
           <div className="justify-self-center">
-            <Link href="/" className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-5 py-3 text-gray-700 hover:bg-gray-50 transition">
+            <Link href="/" className="inline-flex w-full sm:w-auto items-center justify-center rounded-md border border-black/10 bg-white px-5 py-3 text-gray-700 hover:bg-gray-50 transition">
               Retour
             </Link>
           </div>
@@ -665,7 +665,7 @@ export default function CreateListingPage() {
             <button
               type="submit"
               disabled={loading || !title || !cat || !price || Number(price) <= 0 || !location}
-              className="inline-flex items-center justify-center rounded-md bg-teal-600 px-5 py-3 text-white shadow hover:bg-teal-700 transition disabled:opacity-60"
+              className="inline-flex w-full sm:w-auto items-center justify-center rounded-md bg-teal-600 px-5 py-3 text-white shadow hover:bg-teal-700 transition disabled:opacity-60"
             >
               {loading ? "Publication…" : "Publier"}
             </button>

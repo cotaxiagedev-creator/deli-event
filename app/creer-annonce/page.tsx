@@ -83,6 +83,7 @@ export default function CreateListingPage() {
   // Local draft & prefill helpers
   const [hasDraft, setHasDraft] = useState(false);
   const [showDraftBanner, setShowDraftBanner] = useState(false);
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   type Draft = {
     title?: string;
     cat?: string;
@@ -202,6 +203,7 @@ export default function CreateListingPage() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAttemptedSubmit(true);
     setMessage(null);
     setError(null);
 
@@ -369,6 +371,9 @@ export default function CreateListingPage() {
             <button type="button" onClick={applyDraft} className="inline-flex items-center justify-center rounded-md bg-teal-600 px-4 py-2 text-white shadow hover:bg-teal-700 transition text-sm">Reprendre</button>
             <button type="button" onClick={discardDraft} className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-4 py-2 text-gray-700 hover:bg-gray-50 transition text-sm">Ignorer</button>
           </div>
+          {attemptedSubmit && !title && (
+            <p className="mt-1 text-xs text-amber-700">Le titre est requis.</p>
+          )}
         </div>
       )}
 
@@ -397,6 +402,7 @@ export default function CreateListingPage() {
               className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 pr-10 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
               autoComplete="off"
               name="title"
+              aria-invalid={attemptedSubmit && !title ? true : undefined}
             />
             {title && (
               <button
@@ -432,6 +438,7 @@ export default function CreateListingPage() {
               onChange={(e) => setCat(e.target.value)}
               className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900"
               name="category"
+              aria-invalid={attemptedSubmit && !cat ? true : undefined}
             >
               <option value="">Sélectionner</option>
               {categories.map((c) => (
@@ -439,6 +446,9 @@ export default function CreateListingPage() {
               ))}
             </select>
           </div>
+          {attemptedSubmit && !cat && (
+            <p className="mt-1 text-xs text-amber-700">La catégorie est requise.</p>
+          )}
           <div>
             <label className="block text-sm font-medium text-gray-700">Prix / jour (€) *</label>
             <input
@@ -452,6 +462,7 @@ export default function CreateListingPage() {
               inputMode="numeric"
               autoComplete="off"
               name="price"
+              aria-invalid={attemptedSubmit && (!price || Number(price) <= 0) ? true : undefined}
             />
             {cat && pricePresetsByCat[cat]?.length ? (
               <div className="mt-2 flex flex-wrap gap-2">
@@ -501,6 +512,7 @@ export default function CreateListingPage() {
               aria-expanded={suggestions.length > 0}
               role="combobox"
               aria-activedescendant={activeSuggestIndex>=0?`cr-opt-${activeSuggestIndex}`:undefined}
+              aria-invalid={attemptedSubmit && !location ? true : undefined}
               onKeyDown={(e) => {
                 if (!suggestions.length) return;
                 if (e.key === 'ArrowDown') {
@@ -562,6 +574,9 @@ export default function CreateListingPage() {
               </ul>
             )}
             <p className="mt-1 text-xs text-gray-500">Astuce: choisissez une suggestion pour une localisation plus précise.</p>
+            {attemptedSubmit && !location && (
+              <p className="mt-1 text-xs text-amber-700">La localisation est requise.</p>
+            )}
           </div>
         </div>
         <div className="grid sm:grid-cols-2 gap-4">
@@ -647,7 +662,11 @@ export default function CreateListingPage() {
             </Link>
           </div>
           <div className="justify-self-end">
-            <button type="submit" disabled={loading} className="inline-flex items-center justify-center rounded-md bg-teal-600 px-5 py-3 text-white shadow hover:bg-teal-700 transition disabled:opacity-60">
+            <button
+              type="submit"
+              disabled={loading || !title || !cat || !price || Number(price) <= 0 || !location}
+              className="inline-flex items-center justify-center rounded-md bg-teal-600 px-5 py-3 text-white shadow hover:bg-teal-700 transition disabled:opacity-60"
+            >
               {loading ? "Publication…" : "Publier"}
             </button>
           </div>

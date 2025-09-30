@@ -79,6 +79,7 @@ export default function CreateListingPage() {
   const abortRef = useRef<AbortController | null>(null);
   const [locLat, setLocLat] = useState<number | null>(null);
   const [locLon, setLocLon] = useState<number | null>(null);
+  const [activeSuggestIndex, setActiveSuggestIndex] = useState<number>(-1);
   // Local draft & prefill helpers
   const [hasDraft, setHasDraft] = useState(false);
   const [showDraftBanner, setShowDraftBanner] = useState(false);
@@ -499,6 +500,26 @@ export default function CreateListingPage() {
               aria-controls="loc-suggest"
               aria-expanded={suggestions.length > 0}
               role="combobox"
+              aria-activedescendant={activeSuggestIndex>=0?`cr-opt-${activeSuggestIndex}`:undefined}
+              onKeyDown={(e) => {
+                if (!suggestions.length) return;
+                if (e.key === 'ArrowDown') {
+                  e.preventDefault();
+                  setActiveSuggestIndex((i) => (i+1) % suggestions.length);
+                } else if (e.key === 'ArrowUp') {
+                  e.preventDefault();
+                  setActiveSuggestIndex((i) => (i<=0? suggestions.length-1 : i-1));
+                } else if (e.key === 'Enter') {
+                  if (activeSuggestIndex>=0) {
+                    e.preventDefault();
+                    const s = suggestions[activeSuggestIndex];
+                    onSelectSuggestion(s);
+                  }
+                } else if (e.key === 'Escape') {
+                  setSuggestions([]);
+                  setActiveSuggestIndex(-1);
+                }
+              }}
             />
             {location && (
               <button
@@ -524,12 +545,15 @@ export default function CreateListingPage() {
                 className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md border border-black/10 bg-white shadow"
                 role="listbox"
               >
-                {suggestions.map((s) => (
+                {suggestions.map((s, idx) => (
                   <li
                     key={`${s.display_name}-${s.lat}-${s.lon}`}
-                    className="cursor-pointer px-3 py-2 hover:bg-teal-50"
+                    id={`cr-opt-${idx}`}
+                    className={`cursor-pointer px-3 py-2 text-sm ${activeSuggestIndex===idx? 'bg-teal-50 text-teal-900':'text-gray-700 hover:bg-teal-50'}`}
                     role="option"
-                    aria-selected="false"
+                    aria-selected={activeSuggestIndex===idx}
+                    onMouseEnter={() => setActiveSuggestIndex(idx)}
+                    onMouseLeave={() => setActiveSuggestIndex(-1)}
                     onClick={() => onSelectSuggestion(s)}
                   >
                     {s.display_name}
@@ -537,6 +561,7 @@ export default function CreateListingPage() {
                 ))}
               </ul>
             )}
+            <p className="mt-1 text-xs text-gray-500">Astuce: choisissez une suggestion pour une localisation plus précise.</p>
           </div>
         </div>
         <div className="grid sm:grid-cols-2 gap-4">

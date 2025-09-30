@@ -37,6 +37,7 @@ function SearchPage() {
   const [sortBy, setSortBy] = useState<"recent" | "price_asc" | "price_desc">("recent");
   const [withPhoto, setWithPhoto] = useState<boolean>(false);
   const [suggestions, setSuggestions] = useState<Array<{ display_name: string; lat: string; lon: string }>>([]);
+  const [activeSuggestIndex, setActiveSuggestIndex] = useState<number>(-1);
   const [loadingSuggest, setLoadingSuggest] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState<{ name: string; lat: number; lon: number } | null>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -322,6 +323,26 @@ function SearchPage() {
               role="combobox"
               aria-controls="loc-suggest"
               aria-expanded={suggestions.length > 0}
+              aria-activedescendant={activeSuggestIndex>=0?`opt-${activeSuggestIndex}`:undefined}
+              onKeyDown={(e) => {
+                if (!suggestions.length) return;
+                if (e.key === 'ArrowDown') {
+                  e.preventDefault();
+                  setActiveSuggestIndex((i) => (i+1) % suggestions.length);
+                } else if (e.key === 'ArrowUp') {
+                  e.preventDefault();
+                  setActiveSuggestIndex((i) => (i<=0? suggestions.length-1 : i-1));
+                } else if (e.key === 'Enter') {
+                  if (activeSuggestIndex>=0) {
+                    e.preventDefault();
+                    const s = suggestions[activeSuggestIndex];
+                    handleSelectSuggestion(s);
+                  }
+                } else if (e.key === 'Escape') {
+                  setSuggestions([]);
+                  setActiveSuggestIndex(-1);
+                }
+              }}
             />
             {query && (
               <button
@@ -341,12 +362,15 @@ function SearchPage() {
           {/* Suggestions dropdown */}
           {suggestions.length > 0 && (
             <ul id="loc-suggest" role="listbox" className="mt-1 max-h-56 overflow-auto rounded-md border border-black/10 bg-white shadow">
-              {suggestions.map((s) => (
+              {suggestions.map((s, idx) => (
                 <li
                   key={`${s.lat}-${s.lon}`}
-                  className="cursor-pointer px-3 py-2 text-sm text-gray-700 hover:bg-teal-50"
+                  id={`opt-${idx}`}
+                  className={`cursor-pointer px-3 py-2 text-sm ${activeSuggestIndex===idx? 'bg-teal-50 text-teal-900':'text-gray-700 hover:bg-teal-50'}`}
                   role="option"
-                  aria-selected="false"
+                  aria-selected={activeSuggestIndex===idx}
+                  onMouseEnter={() => setActiveSuggestIndex(idx)}
+                  onMouseLeave={() => setActiveSuggestIndex(-1)}
                   onClick={() => handleSelectSuggestion(s)}
                 >
                   {s.display_name}
@@ -357,6 +381,8 @@ function SearchPage() {
               )}
             </ul>
           )}
+          {/* Helper hint */}
+          <p className="mt-1 text-xs text-gray-500">Astuce: choisissez une suggestion pour une localisation plus précise.</p>
           {selectedPlace && (
             <p className="mt-1 text-xs text-gray-500">Lieu sélectionné: {selectedPlace.name}</p>
           )}

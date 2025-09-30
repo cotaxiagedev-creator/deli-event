@@ -641,7 +641,7 @@ export default function CreateListingPage() {
         </div>
 
         {/* Action bar harmonisée: Reset (gauche), Retour (centre), Publier (droite) */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 items-center gap-2 sm:gap-3 pt-3 sm:pt-2">
+        <div className="md:col-span-6 grid grid-cols-1 sm:grid-cols-3 items-stretch gap-2 sm:gap-3 pt-3 sm:pt-2 mt-6 sm:mt-8">
           <div className="justify-self-start">
             <button
               type="button"

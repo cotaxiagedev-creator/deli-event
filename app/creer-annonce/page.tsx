@@ -388,8 +388,8 @@ export default function CreateListingPage() {
         </div>
       )}
       {(!isSupabaseConfigured || !!userId) && (
-      <div className="mt-6 rounded-xl border border-black/10 bg-white p-4 sm:p-6 shadow-sm">
-      <form onSubmit={onSubmit} className="grid gap-4">
+      <div className="mt-6 mx-auto max-w-3xl rounded-xl border border-black/10 bg-white p-4 sm:p-6 shadow-sm">
+      <form onSubmit={onSubmit} className="grid gap-6 md:gap-8">
         <div className="hidden md:block md:col-span-6 -mb-2 text-sm text-gray-600">Informations</div>
         <div className="md:col-span-6">
           <label className="block text-sm font-medium text-gray-700">Titre *</label>

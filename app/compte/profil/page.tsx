@@ -21,6 +21,16 @@ export default function ProfilePage() {
   const [locationName, setLocationName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [bio, setBio] = useState("");
+  // avatar upload state
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  // phone validation
+  const [phoneError, setPhoneError] = useState<string>("");
+  const [attemptedSave, setAttemptedSave] = useState(false);
+  // change password
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   // location autocomplete state
   const [locSuggestions, setLocSuggestions] = useState<Array<{ display_name: string; lat: string; lon: string }>>([]);
   const [loadingSuggest, setLoadingSuggest] = useState(false);
@@ -108,6 +118,7 @@ export default function ProfilePage() {
 
   const onSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAttemptedSave(true);
     if (!isSupabaseConfigured) {
       show("error", "Supabase non configuré");
       return;
@@ -116,8 +127,42 @@ export default function ProfilePage() {
       router.push("/login?next=/compte/profil&msg=connect_required");
       return;
     }
+    // Validate phone if provided
+    if (phone) {
+      const digits = phone.replace(/\D+/g, "");
+      const valid = /^0\d{9}$/.test(digits);
+      if (!valid) {
+        setPhoneError("Numéro invalide (format FR: 10 chiffres, ex: 0612345678)");
+        show("error", "Téléphone invalide");
+        return;
+      } else {
+        setPhoneError("");
+      }
+    }
     try {
       setLoading(true);
+      // Upload avatar file first if provided
+      if (avatarFile && isSupabaseConfigured) {
+        try {
+          setUploadingAvatar(true);
+          const safeName = avatarFile.name.replace(/[^a-zA-Z0-9._-]+/g, "-");
+          const path = `avatars/${userId}-${Date.now()}-${safeName}`;
+          const { error: upErr } = await supabase.storage
+            .from("avatars")
+            .upload(path, avatarFile, {
+              cacheControl: "3600",
+              upsert: false,
+              contentType: avatarFile.type || "image/*",
+            });
+          if (upErr) throw upErr;
+          const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+          if (pub?.publicUrl) setAvatarUrl(pub.publicUrl);
+        } catch (e) {
+          show("error", "Échec de l'upload de l'avatar");
+        } finally {
+          setUploadingAvatar(false);
+        }
+      }
       const { error } = await supabase.auth.updateUser({
         data: {
           full_name: fullName,
@@ -139,6 +184,38 @@ export default function ProfilePage() {
       show("success", "Profil enregistré");
     } catch (err) {
       show("error", err instanceof Error ? err.message : "Erreur d'enregistrement");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isSupabaseConfigured) {
+      show("error", "Supabase non configuré");
+      return;
+    }
+    if (!userId) {
+      router.push("/login?next=/compte/profil&msg=connect_required");
+      return;
+    }
+    if (!newPassword || newPassword.length < 8) {
+      show("error", "Mot de passe trop court (min 8 caractères)");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      show("error", "Les mots de passe ne correspondent pas");
+      return;
+    }
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      setNewPassword("");
+      setConfirmPassword("");
+      show("success", "Mot de passe mis à jour");
+    } catch (err) {
+      show("error", err instanceof Error ? err.message : "Erreur lors du changement de mot de passe");
     } finally {
       setLoading(false);
     }
@@ -187,9 +264,25 @@ export default function ProfilePage() {
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
+                  onBlur={() => {
+                    if (!phone) { setPhoneError(""); return; }
+                    const digits = phone.replace(/\D+/g, "");
+                    if (/^0\d{9}$/.test(digits)) {
+                      // format as 0X XX XX XX XX
+                      const fmt = digits.replace(/(\d{2})(?=\d)/g, "$1 ").trim();
+                      setPhone(fmt);
+                      setPhoneError("");
+                    } else {
+                      setPhoneError("Numéro invalide (format FR: 10 chiffres, ex: 06 12 34 56 78)");
+                    }
+                  }}
+                  aria-invalid={attemptedSave && !!phoneError ? true : undefined}
                   className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
                   placeholder="Ex: 06 12 34 56 78"
                 />
+                {phoneError && (
+                  <p className="mt-1 text-xs text-amber-700">{phoneError}</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Société (optionnel)</label>
@@ -287,6 +380,31 @@ export default function ProfilePage() {
                   className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
                   placeholder="https://…"
                 />
+                <div className="mt-3">
+                  <label className="block text-sm font-medium text-gray-700">ou téléverser un fichier</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0] || null;
+                      setAvatarFile(f);
+                      if (f) {
+                        const url = URL.createObjectURL(f);
+                        setAvatarPreview(url);
+                      } else {
+                        setAvatarPreview(null);
+                      }
+                    }}
+                    className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900"
+                  />
+                  {avatarPreview && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={avatarPreview} alt="Prévisualisation avatar" className="mt-2 h-16 w-16 object-cover rounded-full" />
+                  )}
+                  {uploadingAvatar && (
+                    <p className="mt-1 text-xs text-gray-500">Envoi de l’avatar…</p>
+                  )}
+                </div>
               </div>
               <div className="flex items-end">
                 <div className="flex items-center gap-3">
@@ -297,7 +415,7 @@ export default function ProfilePage() {
                       <Image src="/logo.png" alt="Avatar" fill className="object-contain p-2" sizes="48px" />
                     )}
                   </div>
-                  <span className="text-sm text-gray-500">Aperçu</span>
+                  <span className="text-sm text-gray-500">Aperçu actuel</span>
                 </div>
               </div>
             </div>
@@ -311,6 +429,39 @@ export default function ProfilePage() {
                 className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
                 placeholder="Décrivez votre activité, vos spécialités, etc."
               />
+            </div>
+
+            {/* Change password */}
+            <div className="mt-2 grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Nouveau mot de passe</label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
+                  placeholder="Au moins 8 caractères"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Confirmer</label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
+                  placeholder="Répétez le mot de passe"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <button
+                  onClick={onChangePassword}
+                  className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-5 py-3 text-gray-700 hover:bg-gray-50 transition"
+                  type="button"
+                >
+                  Changer le mot de passe
+                </button>
+              </div>
             </div>
 
             <div className="flex gap-3 pt-2">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -21,6 +21,11 @@ export default function ProfilePage() {
   const [locationName, setLocationName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [bio, setBio] = useState("");
+  // location autocomplete state
+  const [locSuggestions, setLocSuggestions] = useState<Array<{ display_name: string; lat: string; lon: string }>>([]);
+  const [loadingSuggest, setLoadingSuggest] = useState(false);
+  const [activeSuggestIndex, setActiveSuggestIndex] = useState<number>(-1);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const boot = async () => {
@@ -60,6 +65,46 @@ export default function ProfilePage() {
     };
     boot();
   }, [router]);
+
+  // simple debounce util
+  const debounce = (fn: (q: string) => unknown, delay = 300) => {
+    let t: ReturnType<typeof setTimeout>;
+    return (q: string) => {
+      clearTimeout(t);
+      t = setTimeout(() => fn(q), delay);
+    };
+  };
+
+  const fetchSuggestions = useMemo(
+    () =>
+      debounce(async (q: string) => {
+        if (!q || q.length < 2) {
+          setLocSuggestions([]);
+          return;
+        }
+        try {
+          setLoadingSuggest(true);
+          abortRef.current?.abort();
+          const controller = new AbortController();
+          abortRef.current = controller;
+          const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&addressdetails=1&limit=5`;
+          const res = await fetch(url, { signal: controller.signal, headers: { Accept: "application/json" } });
+          if (!res.ok) throw new Error("Nominatim error");
+          const data = (await res.json()) as Array<{ display_name: string; lat: string; lon: string }>;
+          setLocSuggestions(data);
+        } catch {
+          // ignore
+        } finally {
+          setLoadingSuggest(false);
+        }
+      }, 350),
+    []
+  );
+
+  const onSelectSuggestion = (s: { display_name: string; lat: string; lon: string }) => {
+    setLocationName(s.display_name);
+    setLocSuggestions([]);
+  };
 
   const onSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -160,13 +205,76 @@ export default function ProfilePage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700">Localisation par défaut</label>
-              <input
-                type="text"
-                value={locationName}
-                onChange={(e) => setLocationName(e.target.value)}
-                className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
-                placeholder="Ville ou zone"
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  value={locationName}
+                  onChange={(e) => {
+                    setLocationName(e.target.value);
+                    fetchSuggestions(e.target.value);
+                  }}
+                  className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 pr-10 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
+                  placeholder="Ville ou zone"
+                  role="combobox"
+                  aria-controls="profile-loc-suggest"
+                  aria-expanded={locSuggestions.length > 0}
+                  aria-activedescendant={activeSuggestIndex>=0?`profile-opt-${activeSuggestIndex}`:undefined}
+                  onKeyDown={(e) => {
+                    if (!locSuggestions.length) return;
+                    if (e.key === 'ArrowDown') {
+                      e.preventDefault();
+                      setActiveSuggestIndex((i) => (i+1) % locSuggestions.length);
+                    } else if (e.key === 'ArrowUp') {
+                      e.preventDefault();
+                      setActiveSuggestIndex((i) => (i<=0? locSuggestions.length-1 : i-1));
+                    } else if (e.key === 'Enter') {
+                      if (activeSuggestIndex>=0) {
+                        e.preventDefault();
+                        const s = locSuggestions[activeSuggestIndex];
+                        onSelectSuggestion(s);
+                      }
+                    } else if (e.key === 'Escape') {
+                      setLocSuggestions([]);
+                      setActiveSuggestIndex(-1);
+                    }
+                  }}
+                />
+                {locationName && (
+                  <button
+                    type="button"
+                    aria-label="Effacer la localisation par défaut"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-gray-500 hover:text-gray-700"
+                    onClick={() => setLocationName("")}
+                  >
+                    ✕
+                  </button>
+                )}
+                {loadingSuggest && (
+                  <div className="absolute right-3 top-3 h-4 w-4 animate-spin rounded-full border-2 border-teal-500 border-t-transparent" />
+                )}
+                {locSuggestions.length > 0 && (
+                  <ul
+                    id="profile-loc-suggest"
+                    className="absolute z-30 mt-1 max-h-60 w-full overflow-auto rounded-md border border-black/10 bg-white shadow"
+                    role="listbox"
+                  >
+                    {locSuggestions.map((s, idx) => (
+                      <li
+                        key={`${s.display_name}-${s.lat}-${s.lon}`}
+                        id={`profile-opt-${idx}`}
+                        className={`cursor-pointer px-3 py-2 text-sm ${activeSuggestIndex===idx? 'bg-teal-50 text-teal-900':'text-gray-700 hover:bg-teal-50'}`}
+                        role="option"
+                        aria-selected={activeSuggestIndex===idx}
+                        onMouseEnter={() => setActiveSuggestIndex(idx)}
+                        onMouseLeave={() => setActiveSuggestIndex(-1)}
+                        onClick={() => onSelectSuggestion(s)}
+                      >
+                        {s.display_name}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </div>
 
             <div className="grid sm:grid-cols-2 gap-4">

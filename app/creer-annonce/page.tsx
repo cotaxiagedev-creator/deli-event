@@ -389,9 +389,9 @@ export default function CreateListingPage() {
       )}
       {(!isSupabaseConfigured || !!userId) && (
       <div className="mt-6 mx-auto max-w-3xl rounded-xl border border-black/10 bg-white p-4 sm:p-6 shadow-sm">
-      <form onSubmit={onSubmit} className="grid gap-6 md:gap-8">
-        <div className="hidden md:block md:col-span-6 -mb-2 text-sm text-gray-600">Informations</div>
-        <div className="md:col-span-6">
+      <form onSubmit={onSubmit} className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
+        <div className="hidden md:block md:col-span-12 -mb-2 text-sm text-gray-600">Informations</div>
+        <div className="md:col-span-12">
           <label className="block text-sm font-medium text-gray-700">Titre *</label>
           <div className="relative min-w-0">
             <input
@@ -430,7 +430,7 @@ export default function CreateListingPage() {
             </div>
           ) : null}
         </div>
-        <div className="grid md:grid-cols-2 md:items-start md:gap-6 gap-4 md:col-span-6">
+        <div className="grid md:grid-cols-2 md:items-start md:gap-6 gap-4 md:col-span-12">
           <div>
             <label className="block text-sm font-medium text-gray-700">Catégorie *</label>
             <select
@@ -579,7 +579,7 @@ export default function CreateListingPage() {
             )}
           </div>
         </div>
-        <div className="grid md:grid-cols-2 md:items-start md:gap-6 gap-4">
+        <div className="grid md:grid-cols-2 md:items-start md:gap-6 gap-4 md:col-span-12">
           <div className="hidden md:block md:col-span-2 -mb-2 text-sm text-gray-600">Visuels</div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Image (fichier)</label>
@@ -628,8 +628,8 @@ export default function CreateListingPage() {
             <p className="mt-1 text-xs text-gray-500 md:max-h-12 md:overflow-hidden md:leading-snug">Si aucun fichier n’est sélectionné, on utilisera cette URL. Conseil: ajoutez un visuel clair pour améliorer la visibilité dans la recherche.</p>
           </div>
         </div>
-        <div>
-          <div className="hidden md:block md:col-span-6 -mb-2 text-sm text-gray-600">Description</div>
+        <div className="md:col-span-12">
+          <div className="hidden md:block md:col-span-12 -mb-2 text-sm text-gray-600">Description</div>
           <label className="block text-sm font-medium text-gray-700">Description</label>
           <textarea
             value={desc}
@@ -641,7 +641,7 @@ export default function CreateListingPage() {
         </div>
 
         {/* Action bar harmonisée: Reset (gauche), Retour (centre), Publier (droite) */}
-        <div className="md:col-span-6 grid grid-cols-1 sm:grid-cols-3 items-stretch gap-2 sm:gap-3 pt-3 sm:pt-2 mt-6 sm:mt-8">
+        <div className="md:col-span-12 grid grid-cols-1 sm:grid-cols-3 items-stretch gap-2 sm:gap-3 pt-3 sm:pt-2 mt-6 sm:mt-8">
           <div className="justify-self-start">
             <button
               type="button"

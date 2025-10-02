@@ -480,22 +480,22 @@ export default function CreateListingPage() {
             ) : null}
           </div>
         </div>
-        <div className="hidden md:block md:col-span-6 -mb-2 text-sm text-gray-600">Contact</div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Téléphone (optionnel)</label>
-          <input
-            type="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="Ex: 06 12 34 56 78"
-            className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
-          />
-          <p className="mt-1 text-xs text-gray-500">Affiché sur la fiche si renseigné.</p>
-        </div>
-        <div>
-          <div className="hidden md:block md:col-span-6 -mb-2 text-sm text-gray-600">Localisation</div>
-          <label className="block text-sm font-medium text-gray-700">Localisation *</label>
-          <div className="relative">
+        <div className="hidden md:block md:col-span-12 -mb-2 text-sm text-gray-600">Contact</div>
+        <div className="grid md:grid-cols-2 md:items-start md:gap-6 gap-4 md:col-span-12">
+          <div className="min-w-0">
+            <label className="block text-sm font-medium text-gray-700">Téléphone (optionnel)</label>
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="Ex: 06 12 34 56 78"
+              className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400 min-h-[44px]"
+            />
+            <p className="mt-1 text-xs text-gray-500">Affiché sur la fiche si renseigné.</p>
+          </div>
+          <div className="min-w-0">
+            <label className="block text-sm font-medium text-gray-700">Localisation *</label>
+            <div className="relative">
             <input
               type="text"
               value={location}
@@ -506,7 +506,7 @@ export default function CreateListingPage() {
                 fetchSuggestions(e.target.value);
               }}
               placeholder="Ville, code postal"
-              className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 pr-10 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
+              className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 pr-10 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400 min-h-[44px]"
               autoComplete="address-level2"
               aria-controls="loc-suggest"
               aria-expanded={suggestions.length > 0}
@@ -577,6 +577,7 @@ export default function CreateListingPage() {
             {attemptedSubmit && !location && (
               <p className="mt-1 text-xs text-amber-700">La localisation est requise.</p>
             )}
+            </div>
           </div>
         </div>
         <div className="grid md:grid-cols-2 md:items-start md:gap-6 gap-4 md:col-span-12">

@@ -26,10 +26,10 @@ export default function MyListingsPage() {
   const [total, setTotal] = useState(0);
 
   // debounce for search
-  const debounce = (fn: (...args: any[]) => void, delay = 300) => {
+  const debounce = <A extends unknown[]>(fn: (...args: A) => void, delay = 300) => {
     let t: ReturnType<typeof setTimeout> | null = null;
-    return (...args: any[]) => {
-      if (t) clearTimeout(t as any);
+    return (...args: A) => {
+      if (t) clearTimeout(t);
       t = setTimeout(() => fn(...args), delay);
     };
   };
@@ -125,7 +125,11 @@ export default function MyListingsPage() {
               <label className="text-sm text-gray-600">Trier</label>
               <select
                 value={sort}
-                onChange={(e) => { setPage(1); setSort(e.target.value as any); }}
+                onChange={(e) => {
+                  setPage(1);
+                  const next = e.target.value as "recent" | "price_asc" | "price_desc";
+                  setSort(next);
+                }}
                 className="rounded-md border border-black/10 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
                 <option value="recent">Plus récentes</option>

@@ -36,6 +36,10 @@ export default function ProfilePage() {
   const [loadingSuggest, setLoadingSuggest] = useState(false);
   const [activeSuggestIndex, setActiveSuggestIndex] = useState<number>(-1);
   const abortRef = useRef<AbortController | null>(null);
+  // my listings summary
+  type Listing = { id: string; title: string; price_per_day: number | null; image_url: string | null };
+  const [myListings, setMyListings] = useState<Listing[]>([]);
+  const [loadingListings, setLoadingListings] = useState(false);
 
   useEffect(() => {
     const boot = async () => {
@@ -61,6 +65,29 @@ export default function ProfilePage() {
           avatar_url?: string;
           bio?: string;
         };
+
+  // Load user's listings summary
+  useEffect(() => {
+    const loadListings = async () => {
+      if (!isSupabaseConfigured || !userId) return;
+      try {
+        setLoadingListings(true);
+        const { data, error } = await supabase
+          .from("listings")
+          .select("id,title,price_per_day,image_url")
+          .eq("owner_id", userId)
+          .order("id", { ascending: false })
+          .limit(5);
+        if (error) throw error;
+        setMyListings((data as unknown as Listing[]) || []);
+      } catch {
+        // ignore
+      } finally {
+        setLoadingListings(false);
+      }
+    };
+    loadListings();
+  }, [userId]);
         setFullName(m.full_name || "");
         setPhone(m.phone || "");
         setCompany(m.company || "");
@@ -246,6 +273,37 @@ export default function ProfilePage() {
                   placeholder="Ex: Marie Dupont"
                 />
               </div>
+
+            {/* Mes annonces (résumé) */}
+            <div className="mt-4">
+              <div className="mb-2 text-sm text-gray-600">Mes annonces</div>
+              {loadingListings ? (
+                <p className="text-sm text-gray-500">Chargement…</p>
+              ) : myListings.length === 0 ? (
+                <p className="text-sm text-gray-500">Aucune annonce pour le moment.</p>
+              ) : (
+                <ul className="divide-y divide-black/5 rounded-md border border-black/10">
+                  {myListings.map((l) => (
+                    <li key={l.id} className="flex items-center gap-3 p-3">
+                      {l.image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={l.image_url} alt="" className="h-10 w-10 rounded object-cover" />
+                      ) : (
+                        <div className="h-10 w-10 rounded bg-gray-100" />)
+                      }
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-gray-900">{l.title || "Sans titre"}</p>
+                        <p className="text-xs text-gray-500">{l.price_per_day ? `${l.price_per_day} € / jour` : "Prix N/C"}</p>
+                      </div>
+                      <Link href={`/annonce/${l.id}`} className="text-sm text-teal-700 hover:underline">Voir</Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <div className="mt-3">
+                <Link href="/compte/annonces" className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-4 py-2 text-gray-700 hover:bg-gray-50 transition text-sm">Voir toutes mes annonces</Link>
+              </div>
+            </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">E‑mail</label>
                 <input

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
@@ -21,6 +21,10 @@ export default function EditListingPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [phone, setPhone] = useState<string>("");
+  const [suggestions, setSuggestions] = useState<Array<{ display_name: string; lat: string; lon: string }>>([]);
+  const [loadingSuggest, setLoadingSuggest] = useState(false);
+  const [activeSuggestIndex, setActiveSuggestIndex] = useState<number>(-1);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -57,6 +61,46 @@ export default function EditListingPage() {
     };
     load();
   }, [id, router, show]);
+
+  // debounce helper
+  const debounce = (fn: (q: string) => unknown, delay = 300) => {
+    let t: ReturnType<typeof setTimeout>;
+    return (q: string) => {
+      clearTimeout(t);
+      t = setTimeout(() => fn(q), delay);
+    };
+  };
+
+  const fetchSuggestions = useMemo(
+    () =>
+      debounce(async (q: string) => {
+        if (!q || q.length < 2) {
+          setSuggestions([]);
+          return;
+        }
+        try {
+          setLoadingSuggest(true);
+          abortRef.current?.abort();
+          const controller = new AbortController();
+          abortRef.current = controller;
+          const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&addressdetails=1&limit=5`;
+          const res = await fetch(url, { signal: controller.signal, headers: { Accept: "application/json" } });
+          if (!res.ok) throw new Error("Nominatim error");
+          const data = (await res.json()) as Array<{ display_name: string; lat: string; lon: string }>;
+          setSuggestions(data);
+        } catch {
+          // ignore
+        } finally {
+          setLoadingSuggest(false);
+        }
+      }, 350),
+    []
+  );
+
+  const onSelectSuggestion = (s: { display_name: string; lat: string; lon: string }) => {
+    setLocationName(s.display_name);
+    setSuggestions([]);
+  };
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,7 +177,7 @@ export default function EditListingPage() {
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
+              className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400 min-h-[44px]"
               placeholder="Titre de l’annonce"
             />
           </div>
@@ -144,7 +188,7 @@ export default function EditListingPage() {
                 type="text"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
+                className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400 min-h-[44px]"
                 placeholder="Ex: Photobooth"
               />
             </div>
@@ -155,19 +199,64 @@ export default function EditListingPage() {
                 min={1}
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
-                className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
+                className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400 min-h-[44px]"
                 placeholder="Ex: 50"
               />
             </div>
             <div className="sm:col-span-1">
-              <label className="block text-sm font-medium text-gray-700">Lieu (texte)</label>
-              <input
-                type="text"
-                value={locationName}
-                onChange={(e) => setLocationName(e.target.value)}
-                className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
-                placeholder="Ex: Paris"
-              />
+              <label className="block text-sm font-medium text-gray-700">Localisation</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={locationName}
+                  onChange={(e) => { setLocationName(e.target.value); fetchSuggestions(e.target.value); }}
+                  className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 pr-10 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400 min-h-[44px]"
+                  placeholder="Ville, code postal"
+                  role="combobox"
+                  aria-controls="edit-loc-suggest"
+                  aria-expanded={suggestions.length > 0}
+                  aria-activedescendant={activeSuggestIndex>=0?`edit-opt-${activeSuggestIndex}`:undefined}
+                  onKeyDown={(e) => {
+                    if (!suggestions.length) return;
+                    if (e.key === 'ArrowDown') { e.preventDefault(); setActiveSuggestIndex((i)=> (i+1)%suggestions.length); }
+                    else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveSuggestIndex((i)=> (i<=0? suggestions.length-1 : i-1)); }
+                    else if (e.key === 'Enter') { if (activeSuggestIndex>=0) { e.preventDefault(); onSelectSuggestion(suggestions[activeSuggestIndex]); } }
+                    else if (e.key === 'Escape') { setSuggestions([]); setActiveSuggestIndex(-1); }
+                  }}
+                />
+                {locationName && (
+                  <button
+                    type="button"
+                    aria-label="Effacer la localisation"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-gray-500 hover:text-gray-700"
+                    onClick={() => { setLocationName(""); setSuggestions([]); }}
+                  >
+                    ✕
+                  </button>
+                )}
+                {loadingSuggest && (
+                  <div className="absolute right-3 top-3 h-4 w-4 animate-spin rounded-full border-2 border-teal-500 border-t-transparent" />
+                )}
+                {suggestions.length > 0 && (
+                  <ul id="edit-loc-suggest" className="absolute z-30 mt-1 max-h-60 w-full overflow-auto rounded-md border border-black/10 bg-white shadow" role="listbox">
+                    {suggestions.map((s, idx) => (
+                      <li
+                        key={`${s.display_name}-${s.lat}-${s.lon}`}
+                        id={`edit-opt-${idx}`}
+                        className={`cursor-pointer px-3 py-2 text-sm ${activeSuggestIndex===idx? 'bg-teal-50 text-teal-900':'text-gray-700 hover:bg-teal-50'}`}
+                        role="option"
+                        aria-selected={activeSuggestIndex===idx}
+                        onMouseEnter={() => setActiveSuggestIndex(idx)}
+                        onMouseLeave={() => setActiveSuggestIndex(-1)}
+                        onClick={() => onSelectSuggestion(s)}
+                      >
+                        {s.display_name}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <p className="mt-1 text-xs text-gray-500">Astuce: choisissez une suggestion pour une localisation plus précise.</p>
+              </div>
             </div>
           </div>
           <div>
@@ -176,7 +265,7 @@ export default function EditListingPage() {
               type="url"
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
-              className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
+              className="mt-1 w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400 min-h-[44px]"
               placeholder="https://…"
             />
           </div>

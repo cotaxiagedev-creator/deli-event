@@ -119,7 +119,7 @@ export default function MyListingsPage() {
                 value={q}
                 onChange={(e) => { setPage(1); setQ(e.target.value); }}
                 placeholder="Rechercher par titre…"
-                className="w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
+                className="w-full rounded-md border border-black/10 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400 min-h-[44px]"
               />
             </div>
             <div className="flex items-center gap-2">
@@ -131,7 +131,7 @@ export default function MyListingsPage() {
                   const next = e.target.value as "recent" | "price_asc" | "price_desc";
                   setSort(next);
                 }}
-                className="rounded-md border border-black/10 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="rounded-md border border-black/10 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-h-[44px]"
               >
                 <option value="recent">Plus récentes</option>
                 <option value="price_asc">Prix croissant</option>
@@ -139,6 +139,7 @@ export default function MyListingsPage() {
               </select>
             </div>
           </div>
+          <div aria-live="polite">
           {loading ? (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => (
@@ -196,6 +197,7 @@ export default function MyListingsPage() {
               ))}
             </div>
           )}
+          </div>
           {/* Pagination */}
           <div className="mt-6 flex items-center justify-between">
             <p className="text-sm text-gray-600">

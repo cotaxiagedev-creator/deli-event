@@ -65,8 +65,23 @@ export default function ProfilePage() {
           avatar_url?: string;
           bio?: string;
         };
+        
+        setFullName(m.full_name || "");
+        setPhone(m.phone || "");
+        setCompany(m.company || "");
+        setLocationName(m.location_name || "");
+        setAvatarUrl(m.avatar_url || "");
+        setBio(m.bio || "");
+      } catch {
+        // noop
+      } finally {
+        setLoading(false);
+      }
+    };
+    boot();
+  }, [router]);
 
-  // Load user's listings summary
+  // Load user's listings summary (separate effect)
   useEffect(() => {
     const loadListings = async () => {
       if (!isSupabaseConfigured || !userId) return;
@@ -87,21 +102,7 @@ export default function ProfilePage() {
       }
     };
     loadListings();
-  }, [userId]);
-        setFullName(m.full_name || "");
-        setPhone(m.phone || "");
-        setCompany(m.company || "");
-        setLocationName(m.location_name || "");
-        setAvatarUrl(m.avatar_url || "");
-        setBio(m.bio || "");
-      } catch {
-        // noop
-      } finally {
-        setLoading(false);
-      }
-    };
-    boot();
-  }, [router]);
+  }, [isSupabaseConfigured, userId]);
 
   // simple debounce util
   const debounce = (fn: (q: string) => unknown, delay = 300) => {
@@ -184,7 +185,7 @@ export default function ProfilePage() {
           if (upErr) throw upErr;
           const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
           if (pub?.publicUrl) setAvatarUrl(pub.publicUrl);
-        } catch (e) {
+        } catch {
           show("error", "Échec de l'upload de l'avatar");
         } finally {
           setUploadingAvatar(false);

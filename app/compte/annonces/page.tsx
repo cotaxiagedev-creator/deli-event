@@ -22,7 +22,7 @@ export default function MyListingsPage() {
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<"recent" | "price_asc" | "price_desc">("recent");
   const [page, setPage] = useState(1);
-  const pageSize = 12;
+  const pageSize = 6;
   const [total, setTotal] = useState(0);
 
   // debounce for search
@@ -111,6 +111,7 @@ export default function MyListingsPage() {
       {isSupabaseConfigured && userId && (
         <div className="mt-8">
           {/* Controls */}
+          <div className="mb-2 text-sm text-gray-600">Filtres</div>
           <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
             <div className="flex-1 min-w-0">
               <input
@@ -153,14 +154,20 @@ export default function MyListingsPage() {
               ))}
             </div>
           ) : items.length === 0 ? (
-            <div className="rounded-md border border-gray-200 p-6 text-center text-gray-600">
-              Aucune annonce pour le moment.
-              <div className="mt-4">
-                <Link href="/creer-annonce" className="inline-flex items-center justify-center rounded-md bg-teal-600 px-4 py-2 text-white shadow hover:bg-teal-700 transition">
-                  Créer une annonce
-                </Link>
+            q ? (
+              <div className="rounded-md border border-gray-200 p-6 text-center text-gray-600">
+                Aucun résultat pour « {q} ».
               </div>
-            </div>
+            ) : (
+              <div className="rounded-md border border-gray-200 p-6 text-center text-gray-600">
+                Aucune annonce pour le moment.
+                <div className="mt-4">
+                  <Link href="/creer-annonce" className="inline-flex items-center justify-center rounded-md bg-teal-600 px-4 py-2 text-white shadow hover:bg-teal-700 transition">
+                    Créer une annonce
+                  </Link>
+                </div>
+              </div>
+            )
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {items.map((l) => (
